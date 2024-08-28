@@ -15,7 +15,7 @@ include(${CPM_PATH})
 # dependencies
 CPMFindPackage(
     NAME bacnet
-    GIT_REPOSITORY git@github.com:bacnet-stack/bacnet-stack.git
+    GITHUB_REPOSITORY bacnet-stack/bacnet-stack
     GIT_TAG bacnet-stack-1.3.8)
 
 # setup erlang
