@@ -52,6 +52,7 @@ defmodule Bacnet.MixProject do
       {:elixir_cmake, "~> 0.8.0"},
       {:excoveralls, "~> 0.18", only: :test},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
+      {:muontrap, "~> 1.5"},
     ]
   end
 
