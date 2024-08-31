@@ -5,7 +5,7 @@
 
 #include "ei_client.h"
 
-#define OTP_COMPAT_VER 25
+#define OTP_COMPAT_VER 24
 #define HEARTBEAT_PROCESS "Elixir.Bacnet.Heartbeat"
 #define CNODE_NAME "bacnetd"
 
@@ -53,6 +53,11 @@ bool ei_client_config(const char *nodename, const char *cookie)
     return false;
   }
 
+  erlang_pid *pid = ei_self(&client.cnode);
+  if (ei_global_register(client.fd, CNODE_NAME, pid) == -1) {
+    return false;
+  }
+
   client.ready = true;
 
   return true;
@@ -70,6 +75,28 @@ bool ei_client_send(char *process_name, ei_x_buff *msg)
   pthread_mutex_unlock(&client.lock);
 
   return ret == 0 ? true : false;
+}
+
+bool ei_client_call(char *module, char *func, ei_x_buff *args, ei_x_buff *out)
+{
+  pthread_mutex_lock(&client.lock);
+  int ret = ei_rpc(&client.cnode, client.fd, module, func, args->buff,
+                   args->index, out);
+  pthread_mutex_unlock(&client.lock);
+
+  return ret == -1 ? false : true;
+}
+
+bool ei_client_recv(erlang_msg *meta, ei_x_buff *msg)
+{
+  pthread_mutex_lock(&client.lock);
+  int ret = ei_xreceive_msg(client.fd, meta, msg);
+  pthread_mutex_unlock(&client.lock);
+  if (ret == ERL_ERROR) {
+    return false;
+  }
+
+  return true;
 }
 
 static void ei_free()

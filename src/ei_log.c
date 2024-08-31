@@ -10,26 +10,31 @@ static const char *level_to_str(log_level_t level);
 
 void ei_log(log_level_t level, const char *format, ...)
 {
-  va_list args;
-  va_start(args, format);
+  va_list vargs;
+  va_start(vargs, format);
 
   char log_buffer[MAX_LOG_LEN];
-  int log_len = snprintf(log_buffer, sizeof(log_buffer), format, args);
+  int log_len = vsnprintf(log_buffer, sizeof(log_buffer), format, vargs);
 
-  ei_x_buff msg;
-  ei_x_new_with_version(&msg);
-  ei_x_encode_tuple_header(&msg, 2);
-  ei_x_encode_atom(&msg, level_to_str(level));
-  ei_x_encode_binary(&msg, log_buffer, log_len);
+  ei_x_buff out;
+  ei_x_new(&out);
 
-  if (!ei_client_send("Elixir.Bacnet.Logger", &msg)) {
+  ei_x_buff args;
+  ei_x_new(&args);
+  ei_x_encode_list_header(&args, 2);
+  ei_x_encode_atom(&args, level_to_str(level));
+  ei_x_encode_binary(&args, log_buffer, log_len);
+  ei_x_encode_empty_list(&args);
+
+  if (!ei_client_call("Elixir.Bacnet", "ei_log", &args, &out)) {
     char new_format[MAX_LOG_LEN];
     snprintf(new_format, sizeof(new_format), "%s\n", format);
-    vprintf(new_format, args);
+    vprintf(new_format, vargs);
   }
 
-  ei_x_free(&msg);
-  va_end(args);
+  ei_x_free(&out);
+  ei_x_free(&args);
+  va_end(vargs);
 }
 
 static const char *level_to_str(log_level_t level)
