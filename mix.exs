@@ -1,4 +1,4 @@
-defmodule Bacnet.MixProject do
+defmodule BACNet.MixProject do
   use Mix.Project
 
   def project do
@@ -33,7 +33,7 @@ defmodule Bacnet.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {Bacnet.Application, []}
+      mod: {BACNet.Application, []}
     ]
   end
 
