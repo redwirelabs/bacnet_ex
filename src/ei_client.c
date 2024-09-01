@@ -77,6 +77,19 @@ bool ei_client_send(char *process_name, ei_x_buff *msg)
   return ret == 0 ? true : false;
 }
 
+bool ei_client_send_to(erlang_pid *pid, ei_x_buff *msg)
+{
+  if (!client.ready) {
+    return false;
+  }
+
+  pthread_mutex_lock(&client.lock);
+  int ret = ei_send(client.fd, pid, msg->buff, msg->index);
+  pthread_mutex_unlock(&client.lock);
+
+  return ret == 0 ? true : false;
+}
+
 bool ei_client_call(char *module, char *func, ei_x_buff *args, ei_x_buff *out)
 {
   pthread_mutex_lock(&client.lock);

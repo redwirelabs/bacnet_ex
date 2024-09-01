@@ -12,6 +12,11 @@ defmodule Bacnet do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
+  @spec add_device(device :: term) :: :ok | {:error, term}
+  def add_device(device) do
+    GenServer.call({:global, :bacnetd}, {:add_device, device})
+  end
+
   @impl GenServer
   def init(_) do
     {:ok, nil}
