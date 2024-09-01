@@ -13,7 +13,6 @@ defmodule Bacnet.Application do
 
   defp children() do
     [
-      {Bacnet, nil},
       {MuonTrap.Daemon, [bacnetd_exec(), bacnetd_args(), []]}
     ]
   end
