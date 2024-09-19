@@ -1,15 +1,24 @@
-defmodule Bacnet.Application do
+defmodule BACNet.Application do
   @moduledoc false
 
   use Application
 
   @impl true
   def start(_type, _args) do
-    children = children()
-    opts = [strategy: :one_for_one, name: Bacnet.Supervisor]
+    bacnetd_exe = "#{:code.priv_dir(:bacnet)}/bacnetd"
+    bacnetd_args = [
+      "--cookie", Node.get_cookie |> to_string,
+      "--nodename", Node.self |> to_string,
+    ]
 
-    Supervisor.start_link(children, opts)
+    children = [
+      {MuonTrap.Daemon, [bacnetd_exe, bacnetd_args, []]}
+    ]
+
+    Supervisor.start_link(
+      children,
+      strategy: :one_for_one,
+      name: BACNet.Supervisor
+    )
   end
-
-  defp children(), do: []
 end

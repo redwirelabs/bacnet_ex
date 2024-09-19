@@ -1,4 +1,4 @@
-defmodule Bacnet.MixProject do
+defmodule BACNet.MixProject do
   use Mix.Project
 
   def project do
@@ -33,7 +33,7 @@ defmodule Bacnet.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {Bacnet.Application, []}
+      mod: {BACNet.Application, []}
     ]
   end
 
@@ -52,6 +52,7 @@ defmodule Bacnet.MixProject do
       {:elixir_cmake, "~> 0.8.0"},
       {:excoveralls, "~> 0.18", only: :test},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
+      {:muontrap, "~> 1.5"},
     ]
   end
 
