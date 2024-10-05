@@ -6,6 +6,7 @@
 typedef enum {
   CALL_CREATE_GATEWAY = 0,
   CALL_CREATE_ROUTED_DEVICE,
+  CALL_CREATE_ROUTED_ANALOG_INPUT,
   CALL_UNKNOWN = 255,
 } __attribute__((packed)) bacnet_call_type_t;
 
@@ -16,6 +17,13 @@ typedef struct {
   char                    model[MAXATOMLEN];
   char                    firmware_version[MAXATOMLEN];
 } create_routed_device_t;
+
+typedef struct {
+  uint32_t                 device_bacnet_id;
+  uint32_t                 object_bacnet_id;
+  char                     name[MAXATOMLEN];
+  BACNET_ENGINEERING_UNITS unit;
+} create_routed_analog_input_t;
 
 int bacnet_call_malloc(bacnet_call_type_t type, void** call);
 

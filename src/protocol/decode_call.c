@@ -5,13 +5,15 @@
 #include "protocol/enum.h"
 
 const enum_tuple_t BACNET_CALL_ATOMS[] = {
-  {"create_gateway",       0},
-  {"create_routed_device", 1},
+  {"create_gateway",             0},
+  {"create_routed_device",       1},
+  {"create_routed_analog_input", 2},
 };
 
 const size_t BACNET_CALL_SIZE_LOOKUP[] = {
   sizeof(create_routed_device_t),
   sizeof(create_routed_device_t),
+  sizeof(create_routed_analog_input_t),
 };
 
 static int decode_call_type(char* buffer, int* index, uint8_t* type);
@@ -140,6 +142,47 @@ decode_create_routed_device(char* buffer, int* index, create_routed_device_t* da
 }
 
 static int
+decode_bacnet_unit_atom(
+  char* buffer,
+  int* index,
+  BACNET_ENGINEERING_UNITS* unit)
+{
+  char atom[MAXATOMLEN] = { 0 };
+
+  if (ei_decode_atom(buffer, index, atom) == -1)
+    return -1;
+
+  int enum_value = find_enum_value(BACNET_UNIT_ATOMS, atom);
+  if (enum_value == -1)
+    return -1;
+
+  *unit = (BACNET_ENGINEERING_UNITS)enum_value;
+
+  return 0;
+}
+
+static int
+decode_create_routed_analog_input(
+  char* buffer,
+  int* index,
+  create_routed_analog_input_t* data)
+{
+  long size = 0;
+  int  type = 0;
+
+  bool is_invalid =
+       ei_decode_ulong(buffer, index, (unsigned long*)&data->device_bacnet_id)
+    || ei_decode_ulong(buffer, index, (unsigned long*)&data->object_bacnet_id)
+    || ei_get_type(buffer, index, &type, (int*)&size)
+    || (size >= sizeof(data->name))
+    || (memset(data->name, 0, sizeof(data->name)) == NULL)
+    || ei_decode_binary(buffer, index, data->name, &size)
+    || decode_bacnet_unit_atom(buffer, index, &data->unit);
+
+  return is_invalid ? -1 : 0;
+}
+
+static int
 decode_call_data(char* buffer, int* index, bacnet_call_type_t type, void* data)
 {
   switch(type) {
@@ -148,6 +191,9 @@ decode_call_data(char* buffer, int* index, bacnet_call_type_t type, void* data)
 
     case CALL_CREATE_ROUTED_DEVICE:
       return decode_create_routed_device(buffer, index, data);
+
+    case CALL_CREATE_ROUTED_ANALOG_INPUT:
+      return decode_create_routed_analog_input(buffer, index, data);
 
     default:
       return -1;

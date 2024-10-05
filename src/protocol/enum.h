@@ -6,6 +6,8 @@ typedef struct {
   int         value;
 } enum_tuple_t;
 
+extern const enum_tuple_t BACNET_UNIT_ATOMS[];
+
 int find_enum_value(const enum_tuple_t* enum_tuples, const char* atom);
 
 #endif /* BACNET_ENUM_H */

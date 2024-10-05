@@ -4,6 +4,7 @@
 #include <bacnet/bactext.h>
 #include <bacnet/basic/services.h>
 #include <bacnet/basic/object/device.h>
+#include <bacnet/basic/object/routed_analog_input.h>
 #include <bacnet/datalink/datalink.h>
 #include <bacnet/datalink/dlenv.h>
 
@@ -23,9 +24,13 @@ typedef int (*call_handler_t)(void* data);
 static int handle_create_gateway(create_routed_device_t* device);
 static int handle_create_routed_device(create_routed_device_t* device);
 
+static int
+handle_create_routed_analog_input(create_routed_analog_input_t* params);
+
 static call_handler_t CALL_HANDLERS_BY_TYPE[] = {
   (call_handler_t)handle_create_gateway,
   (call_handler_t)handle_create_routed_device,
+  (call_handler_t)handle_create_routed_analog_input,
 };
 
 /**
@@ -207,6 +212,28 @@ static object_functions_t SUPPORTED_OBJECT_TABLE[] = {
     .Object_Delete = NULL,
     .Object_Timer = NULL,
   },
+  {
+    .Object_Type = OBJECT_ANALOG_INPUT,
+    .Object_Init = Routed_Analog_Input_Init,
+    .Object_Count = Routed_Analog_Input_Count,
+    .Object_Index_To_Instance = Routed_Analog_Input_Index_To_Instance,
+    .Object_Valid_Instance = Routed_Analog_Input_Valid_Instance,
+    .Object_Name = Routed_Analog_Input_Object_Name,
+    .Object_Read_Property = Routed_Analog_Input_Read_Property,
+    .Object_Write_Property = NULL,
+    .Object_RPM_List = Routed_Analog_Input_Property_Lists,
+    .Object_RR_Info = NULL,
+    .Object_Iterator = NULL,
+    .Object_Value_List = Routed_Analog_Input_Encode_Value_List,
+    .Object_COV = Routed_Analog_Input_Change_Of_Value,
+    .Object_COV_Clear = Routed_Analog_Input_Change_Of_Value_Clear,
+    .Object_Intrinsic_Reporting = NULL,
+    .Object_Add_List_Element = NULL,
+    .Object_Remove_List_Element = NULL,
+    .Object_Create = Routed_Analog_Input_Create,
+    .Object_Delete = Routed_Analog_Input_Delete,
+    .Object_Timer = NULL,
+  },
 };
 
 static int init_service_handlers()
@@ -350,6 +377,21 @@ static int handle_create_routed_device(create_routed_device_t* device)
 
   DEVICE_OBJECT_DATA* child = Get_Routed_Device_Object(index);
   set_device_address(child, bacnet_network_id);
+
+  return 0;
+}
+
+static int
+handle_create_routed_analog_input(create_routed_analog_input_t* params)
+{
+  uint32_t device_index =
+    Routed_Device_Instance_To_Index(params->device_bacnet_id);
+
+  Get_Routed_Device_Object(device_index);
+  Routed_Analog_Input_Create(params->object_bacnet_id);
+  Routed_Analog_Input_Units_Set(params->object_bacnet_id, params->unit);
+  Routed_Analog_Input_Name_Set(params->object_bacnet_id, params->name);
+  Get_Routed_Device_Object(0);
 
   return 0;
 }
