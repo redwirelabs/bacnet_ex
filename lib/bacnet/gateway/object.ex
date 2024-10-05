@@ -32,4 +32,27 @@ defmodule BACNet.Gateway.Object do
 
     GenServer.call(pid, request)
   end
+
+  @doc """
+  Sets the present value of an analog input object.
+
+  ## Parameters
+
+    - `pid`: The PID of the GenServer managing the BACnet communication.
+    - `device_id`: The ID of the BACnet device containing the object.
+    - `object_id`: The unique ID of the analog input object to update.
+    - `value`: The new present value to be set for the analog input.
+  """
+  @spec set_analog_input_present_value(
+          pid :: pid,
+          device_id :: integer,
+          object_id :: integer,
+          value :: float
+        ) :: :ok | {:error, term}
+  def set_analog_input_present_value(pid, device_id, object_id, value) do
+    request =
+      {:set_routed_analog_input_value, device_id, object_id, value}
+
+    GenServer.call(pid, request)
+  end
 end

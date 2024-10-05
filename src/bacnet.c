@@ -27,10 +27,14 @@ static int handle_create_routed_device(create_routed_device_t* device);
 static int
 handle_create_routed_analog_input(create_routed_analog_input_t* params);
 
+static int
+handle_set_routed_analog_input_value(set_routed_analog_input_value_t* params);
+
 static call_handler_t CALL_HANDLERS_BY_TYPE[] = {
   (call_handler_t)handle_create_gateway,
   (call_handler_t)handle_create_routed_device,
   (call_handler_t)handle_create_routed_analog_input,
+  (call_handler_t)handle_set_routed_analog_input_value,
 };
 
 /**
@@ -391,6 +395,23 @@ handle_create_routed_analog_input(create_routed_analog_input_t* params)
   Routed_Analog_Input_Create(params->object_bacnet_id);
   Routed_Analog_Input_Units_Set(params->object_bacnet_id, params->unit);
   Routed_Analog_Input_Name_Set(params->object_bacnet_id, params->name);
+  Get_Routed_Device_Object(0);
+
+  return 0;
+}
+
+static int
+handle_set_routed_analog_input_value(set_routed_analog_input_value_t* params)
+{
+  uint32_t device_index =
+    Routed_Device_Instance_To_Index(params->device_bacnet_id);
+
+  Get_Routed_Device_Object(device_index);
+  Routed_Analog_Input_Present_Value_Set(
+    params->object_bacnet_id,
+    params->value
+  );
+
   Get_Routed_Device_Object(0);
 
   return 0;

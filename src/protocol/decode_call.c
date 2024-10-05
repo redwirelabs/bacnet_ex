@@ -5,15 +5,17 @@
 #include "protocol/enum.h"
 
 const enum_tuple_t BACNET_CALL_ATOMS[] = {
-  {"create_gateway",             0},
-  {"create_routed_device",       1},
-  {"create_routed_analog_input", 2},
+  {"create_gateway",                0},
+  {"create_routed_device",          1},
+  {"create_routed_analog_input",    2},
+  {"set_routed_analog_input_value", 3},
 };
 
 const size_t BACNET_CALL_SIZE_LOOKUP[] = {
   sizeof(create_routed_device_t),
   sizeof(create_routed_device_t),
   sizeof(create_routed_analog_input_t),
+  sizeof(set_routed_analog_input_value_t),
 };
 
 static int decode_call_type(char* buffer, int* index, uint8_t* type);
@@ -183,6 +185,20 @@ decode_create_routed_analog_input(
 }
 
 static int
+decode_set_routed_analog_input_value(
+  char* buffer,
+  int* index,
+  set_routed_analog_input_value_t* data)
+{
+  bool is_invalid =
+       ei_decode_ulong(buffer, index, (unsigned long*)&data->device_bacnet_id)
+    || ei_decode_ulong(buffer, index, (unsigned long*)&data->object_bacnet_id)
+    || ei_decode_double(buffer, index, &data->value);
+
+  return is_invalid ? -1 : 0;
+}
+
+static int
 decode_call_data(char* buffer, int* index, bacnet_call_type_t type, void* data)
 {
   switch(type) {
@@ -194,6 +210,9 @@ decode_call_data(char* buffer, int* index, bacnet_call_type_t type, void* data)
 
     case CALL_CREATE_ROUTED_ANALOG_INPUT:
       return decode_create_routed_analog_input(buffer, index, data);
+
+    case CALL_SET_ROUTED_ANALOG_INPUT_VALUE:
+      return decode_set_routed_analog_input_value(buffer, index, data);
 
     default:
       return -1;
