@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.20.0 FATAL_ERROR)
 
 # dependency manager
 set(CPM_VERSION 0.40.2)
+set(CPM_SOURCE_CACHE ${CMAKE_CURRENT_SOURCE_DIR}/_build/cache/cpm)
 set(CPM_USE_NAMED_CACHE_DIRECTORIES false)
 set(CPM_PATH "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_VERSION}.cmake")
 if(NOT EXISTS ${CPM_PATH})
@@ -12,11 +13,15 @@ if(NOT EXISTS ${CPM_PATH})
 endif()
 include(${CPM_PATH})
 
+file(GLOB PATCH_FILES "${CMAKE_SOURCE_DIR}/patches/*.patch")
+
 # dependencies
 CPMFindPackage(
     NAME bacnet
     GITHUB_REPOSITORY bacnet-stack/bacnet-stack
-    GIT_TAG bacnet-stack-1.3.8)
+    GIT_TAG bacnet-stack-1.3.8
+    OPTIONS "BACNET_STACK_BUILD_APPS NO"
+    PATCHES ${PATCH_FILES})
 
 # setup erlang
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} $ENV{ERL_EI_LIBDIR})
@@ -24,12 +29,19 @@ find_library(ERLANG_EI_LIB ei)
 include_directories($ENV{ERL_EI_INCLUDE_DIR})
 
 # sources
-file(GLOB sources src/*.c)
+INCLUDE_DIRECTORIES(src/)
+set(SOURCES
+    src/bacnet.c
+    src/log.c
+    src/main.c
+    src/port.c
+    src/protocol/decode_call.c
+    src/protocol/enum.c)
 
 # build
 project(bacnetd)
 set(CMAKE_BUILD_TYPE Release)
-add_executable(bacnetd ${sources})
+add_executable(bacnetd ${SOURCES})
 set_target_properties(bacnetd PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELEASE $ENV{MIX_APP_PATH}/priv)
-target_link_libraries(bacnetd PRIVATE bacnet-stack::bacnet-stack ${ERLANG_EI_LIB})
+target_link_libraries(bacnetd PRIVATE bacnet-stack ${ERLANG_EI_LIB})

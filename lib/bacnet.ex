@@ -22,18 +22,19 @@ defmodule BACNet do
   end
 
   @impl GenServer
-  def init(_args) do
+  def init(args) do
     bacnetd_exe = "#{:code.priv_dir(:bacnet)}/bacnetd"
 
-    port = Port.open(
-      {:spawn, bacnetd_exe},
-      [
-        :binary,
-        :use_stdio,
-        packet: 4,
-        env: [],
-      ]
-    )
+    env =
+      []
+      |> maybe_add_env(~c"BACNET_IFACE", args[:network_interface])
+      |> maybe_add_env(~c"BACNET_NETWORK_ID", args[:network_id])
+
+    port =
+      Port.open(
+        {:spawn, bacnetd_exe},
+        [:binary, :use_stdio, packet: 4, env: env]
+      )
 
     state = %State{port: port}
 
@@ -72,4 +73,7 @@ defmodule BACNet do
   defp process_message(unknown) do
     Logger.warning("Unknown message received #{inspect(unknown)}")
   end
+
+  defp maybe_add_env(env, _key, nil), do: env
+  defp maybe_add_env(env, key, value), do: [{key, to_charlist(value)} | env]
 end
