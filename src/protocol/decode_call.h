@@ -9,6 +9,7 @@ typedef enum {
   CALL_CREATE_ROUTED_ANALOG_INPUT,
   CALL_SET_ROUTED_ANALOG_INPUT_VALUE,
   CALL_CREATE_ROUTED_MULTISTATE_INPUT,
+  CALL_SET_ROUTED_MULTISTATE_INPUT_VALUE,
   CALL_UNKNOWN = 255,
 } __attribute__((packed)) bacnet_call_type_t;
 
@@ -40,6 +41,12 @@ typedef struct {
   char*    states;
   size_t   states_length;
 } create_routed_multistate_input_t;
+
+typedef struct {
+  uint32_t device_bacnet_id;
+  uint32_t object_bacnet_id;
+  uint8_t  value;
+} set_routed_multistate_input_value_t;
 
 int bacnet_call_malloc(bacnet_call_type_t type, void** call);
 

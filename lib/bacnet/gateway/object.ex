@@ -79,4 +79,27 @@ defmodule BACNet.Gateway.Object do
 
     GenServer.call(pid, request)
   end
+
+  @doc """
+  Sets the present value of a multistate input object.
+
+  ## Parameters
+
+  - `pid`: The PID of the GenServer managing the BACnet communication.
+  - `device_id`: The ID of the BACnet device containing the object.
+  - `object_id`: The unique ID of the multistate input object to update.
+  - `value`: The new present value to be set for the multistate input.
+  """
+  @spec set_multistate_input_present_value(
+          pid :: pid,
+          device_id :: integer,
+          object_id :: integer,
+          value :: non_neg_integer
+        ) :: :ok | {:error, term}
+  def set_multistate_input_present_value(pid, device_id, object_id, value) do
+    request =
+      {:set_routed_multistate_input_value, device_id, object_id, value}
+
+    GenServer.call(pid, request)
+  end
 end

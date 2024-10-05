@@ -34,12 +34,16 @@ handle_set_routed_analog_input_value(set_routed_analog_input_value_t* params);
 static int
 handle_create_routed_multistate_input(create_routed_multistate_input_t* params);
 
+static int
+handle_set_routed_multistate_value(set_routed_multistate_input_value_t* params);
+
 static call_handler_t CALL_HANDLERS_BY_TYPE[] = {
   (call_handler_t)handle_create_gateway,
   (call_handler_t)handle_create_routed_device,
   (call_handler_t)handle_create_routed_analog_input,
   (call_handler_t)handle_set_routed_analog_input_value,
   (call_handler_t)handle_create_routed_multistate_input,
+  (call_handler_t)handle_set_routed_multistate_value,
 };
 
 /**
@@ -458,6 +462,24 @@ handle_create_routed_multistate_input(create_routed_multistate_input_t* params)
     params->object_bacnet_id,
     params->states,
     (int)params->states_length
+  );
+
+  Get_Routed_Device_Object(0);
+
+  return 0;
+}
+
+static int
+handle_set_routed_multistate_value(set_routed_multistate_input_value_t* params)
+{
+  uint32_t device_index =
+    Routed_Device_Instance_To_Index(params->device_bacnet_id);
+
+  Get_Routed_Device_Object(device_index);
+
+  Routed_Multistate_Input_Present_Value_Set(
+    params->object_bacnet_id,
+    params->value
   );
 
   Get_Routed_Device_Object(0);
