@@ -70,7 +70,7 @@ defmodule BACNet.MixProject do
 
   defp package do
     [
-      licenses: ["Apache-2.0"],
+      licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/redwirelabs/bacnet_ex"},
       maintainers: ["Abelino Romo"],
       files: [
