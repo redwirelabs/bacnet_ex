@@ -29,6 +29,8 @@ defmodule BACNet do
       []
       |> maybe_add_env(~c"BACNET_IFACE", args[:network_interface])
       |> maybe_add_env(~c"BACNET_NETWORK_ID", args[:network_id])
+      |> maybe_add_env(~c"BACNET_VENDOR_ID", args[:vendor_id])
+      |> maybe_add_env(~c"BACNET_VENDOR_NAME", args[:vendor_name])
 
     port =
       Port.open(
