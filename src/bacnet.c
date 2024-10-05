@@ -5,6 +5,7 @@
 #include <bacnet/basic/services.h>
 #include <bacnet/basic/object/device.h>
 #include <bacnet/basic/object/routed_analog_input.h>
+#include <bacnet/basic/object/routed_multistate_input.h>
 #include <bacnet/datalink/datalink.h>
 #include <bacnet/datalink/dlenv.h>
 
@@ -30,11 +31,15 @@ handle_create_routed_analog_input(create_routed_analog_input_t* params);
 static int
 handle_set_routed_analog_input_value(set_routed_analog_input_value_t* params);
 
+static int
+handle_create_routed_multistate_input(create_routed_multistate_input_t* params);
+
 static call_handler_t CALL_HANDLERS_BY_TYPE[] = {
   (call_handler_t)handle_create_gateway,
   (call_handler_t)handle_create_routed_device,
   (call_handler_t)handle_create_routed_analog_input,
   (call_handler_t)handle_set_routed_analog_input_value,
+  (call_handler_t)handle_create_routed_multistate_input,
 };
 
 /**
@@ -238,6 +243,28 @@ static object_functions_t SUPPORTED_OBJECT_TABLE[] = {
     .Object_Delete = Routed_Analog_Input_Delete,
     .Object_Timer = NULL,
   },
+  {
+    .Object_Type = OBJECT_MULTI_STATE_INPUT,
+    .Object_Init = Routed_Multistate_Input_Init,
+    .Object_Count = Routed_Multistate_Input_Count,
+    .Object_Index_To_Instance = Routed_Multistate_Input_Index_To_Instance,
+    .Object_Valid_Instance = Routed_Multistate_Input_Valid_Instance,
+    .Object_Name = Routed_Multistate_Input_Object_Name,
+    .Object_Read_Property = Routed_Multistate_Input_Read_Property,
+    .Object_Write_Property = NULL,
+    .Object_RPM_List = Routed_Multistate_Input_Property_Lists,
+    .Object_RR_Info = NULL,
+    .Object_Iterator = NULL,
+    .Object_Value_List = Routed_Multistate_Input_Encode_Value_List,
+    .Object_COV = Routed_Multistate_Input_Change_Of_Value,
+    .Object_COV_Clear = Routed_Multistate_Input_Change_Of_Value_Clear,
+    .Object_Intrinsic_Reporting = NULL,
+    .Object_Add_List_Element = NULL,
+    .Object_Remove_List_Element = NULL,
+    .Object_Create = Routed_Multistate_Input_Create,
+    .Object_Delete = Routed_Multistate_Input_Delete,
+    .Object_Timer = NULL,
+  },
 };
 
 static int init_service_handlers()
@@ -410,6 +437,27 @@ handle_set_routed_analog_input_value(set_routed_analog_input_value_t* params)
   Routed_Analog_Input_Present_Value_Set(
     params->object_bacnet_id,
     params->value
+  );
+
+  Get_Routed_Device_Object(0);
+
+  return 0;
+}
+
+static int
+handle_create_routed_multistate_input(create_routed_multistate_input_t* params)
+{
+  uint32_t device_index =
+    Routed_Device_Instance_To_Index(params->device_bacnet_id);
+
+  Get_Routed_Device_Object(device_index);
+  Routed_Multistate_Input_Create(params->object_bacnet_id);
+  Routed_Multistate_Input_Name_Set(params->object_bacnet_id, params->name);
+
+  Routed_Multistate_Input_State_Text_List_Set(
+    params->object_bacnet_id,
+    params->states,
+    (int)params->states_length
   );
 
   Get_Routed_Device_Object(0);

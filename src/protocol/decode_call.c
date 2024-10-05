@@ -5,10 +5,11 @@
 #include "protocol/enum.h"
 
 const enum_tuple_t BACNET_CALL_ATOMS[] = {
-  {"create_gateway",                0},
-  {"create_routed_device",          1},
-  {"create_routed_analog_input",    2},
-  {"set_routed_analog_input_value", 3},
+  {"create_gateway",                 0},
+  {"create_routed_device",           1},
+  {"create_routed_analog_input",     2},
+  {"set_routed_analog_input_value",  3},
+  {"create_routed_multistate_input", 4},
 };
 
 const size_t BACNET_CALL_SIZE_LOOKUP[] = {
@@ -16,6 +17,7 @@ const size_t BACNET_CALL_SIZE_LOOKUP[] = {
   sizeof(create_routed_device_t),
   sizeof(create_routed_analog_input_t),
   sizeof(set_routed_analog_input_value_t),
+  sizeof(create_routed_multistate_input_t),
 };
 
 static int decode_call_type(char* buffer, int* index, uint8_t* type);
@@ -199,6 +201,70 @@ decode_set_routed_analog_input_value(
 }
 
 static int
+decode_multistate_states(
+  char* buffer,
+  int* index,
+  char** out,
+  size_t* out_length)
+{
+  int  type        = 0;
+  long atom_size   = 0;
+  int  atoms_count = 0;
+  int  cursor      = 0;
+
+  if (ei_decode_list_header(buffer, index, &atoms_count) || atoms_count == 0)
+    return -1;
+
+  for (int i = 0; i < atoms_count; i++) {
+    if (ei_get_type(buffer, index, &type, (int *)&atom_size))
+      return -1;
+
+    *out = realloc(*out, cursor + atom_size + 1);
+    if (*out == NULL)
+      goto cleanup;
+
+    char* cursor_buffer = *out + cursor;
+    memset(cursor_buffer, 0, atom_size + 1);
+
+    if (ei_decode_binary(buffer, index, cursor_buffer, &atom_size))
+      goto cleanup;
+
+    cursor += atom_size + 1;
+    *out_length = cursor;
+    continue;
+
+  cleanup:
+    if (*out != NULL)
+      free(*out);
+
+    return -1;
+  }
+
+  return 0;
+}
+
+static int
+decode_create_routed_multistate_input(
+  char* buffer,
+  int* index,
+  create_routed_multistate_input_t* data)
+{
+  long size = 0;
+  int  type = 0;
+
+  bool is_invalid =
+       ei_decode_ulong(buffer, index, (unsigned long*)&data->device_bacnet_id)
+    || ei_decode_ulong(buffer, index, (unsigned long*)&data->object_bacnet_id)
+    || ei_get_type(buffer, index, &type, (int*)&size)
+    || (size >= sizeof(data->name))
+    || (memset(data->name, 0, sizeof(data->name)) == NULL)
+    || ei_decode_binary(buffer, index, data->name, &size)
+    || decode_multistate_states(buffer, index, &data->states, &data->states_length);
+
+  return is_invalid ? -1 : 0;
+}
+
+static int
 decode_call_data(char* buffer, int* index, bacnet_call_type_t type, void* data)
 {
   switch(type) {
@@ -213,6 +279,9 @@ decode_call_data(char* buffer, int* index, bacnet_call_type_t type, void* data)
 
     case CALL_SET_ROUTED_ANALOG_INPUT_VALUE:
       return decode_set_routed_analog_input_value(buffer, index, data);
+
+    case CALL_CREATE_ROUTED_MULTISTATE_INPUT:
+      return decode_create_routed_multistate_input(buffer, index, data);
 
     default:
       return -1;

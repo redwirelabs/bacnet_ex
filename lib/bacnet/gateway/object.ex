@@ -55,4 +55,28 @@ defmodule BACNet.Gateway.Object do
 
     GenServer.call(pid, request)
   end
+
+  @doc """
+  Creates a new multistate input object.
+
+  ## Parameters
+
+    - `pid`: The PID of the GenServer managing the BACnet communication.
+    - `device_id`: The ID of the BACnet device where the object will be created.
+    - `object_id`: The unique ID for the new multistate input object.
+    - `name`: A unique name for the object.
+  """
+  @spec create_multistate_input(
+          pid       :: pid,
+          device_id :: integer,
+          object_id :: integer,
+          name      :: String.t,
+          states    :: [String.t]
+        ) :: :ok | {:error, term}
+  def create_multistate_input(pid, device_id, object_id, name, states) do
+    request =
+      {:create_routed_multistate_input, device_id, object_id, name, states}
+
+    GenServer.call(pid, request)
+  end
 end
