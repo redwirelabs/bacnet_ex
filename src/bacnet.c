@@ -21,9 +21,11 @@ static void* event_loop(void* arg);
 
 typedef int (*call_handler_t)(void* data);
 static int handle_create_gateway(create_routed_device_t* device);
+static int handle_create_routed_device(create_routed_device_t* device);
 
 static call_handler_t CALL_HANDLERS_BY_TYPE[] = {
   (call_handler_t)handle_create_gateway,
+  (call_handler_t)handle_create_routed_device,
 };
 
 /**
@@ -332,6 +334,22 @@ static int handle_create_gateway(create_routed_device_t* device)
     device->firmware_version,
     strlen(device->firmware_version)
   );
+
+  return 0;
+}
+
+static int handle_create_routed_device(create_routed_device_t* device)
+{
+  int index =
+    Add_Routed_Device(
+      device->bacnet_id,
+      &device->name,
+      device->description,
+      device->model,
+      device->firmware_version);
+
+  DEVICE_OBJECT_DATA* child = Get_Routed_Device_Object(index);
+  set_device_address(child, bacnet_network_id);
 
   return 0;
 }

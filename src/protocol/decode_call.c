@@ -5,10 +5,12 @@
 #include "protocol/enum.h"
 
 const enum_tuple_t BACNET_CALL_ATOMS[] = {
-  {"create_gateway", 0},
+  {"create_gateway",       0},
+  {"create_routed_device", 1},
 };
 
 const size_t BACNET_CALL_SIZE_LOOKUP[] = {
+  sizeof(create_routed_device_t),
   sizeof(create_routed_device_t),
 };
 
@@ -142,6 +144,9 @@ decode_call_data(char* buffer, int* index, bacnet_call_type_t type, void* data)
 {
   switch(type) {
     case CALL_CREATE_GATEWAY:
+      return decode_create_routed_device(buffer, index, data);
+
+    case CALL_CREATE_ROUTED_DEVICE:
       return decode_create_routed_device(buffer, index, data);
 
     default:

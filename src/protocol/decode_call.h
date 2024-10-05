@@ -5,6 +5,7 @@
 
 typedef enum {
   CALL_CREATE_GATEWAY = 0,
+  CALL_CREATE_ROUTED_DEVICE,
   CALL_UNKNOWN = 255,
 } __attribute__((packed)) bacnet_call_type_t;
 
