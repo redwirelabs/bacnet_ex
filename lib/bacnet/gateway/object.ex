@@ -15,22 +15,20 @@ defmodule BACNet.Gateway.Object do
     - `unit`: The unit of measurement for the analog input, represented as an atom.
   """
   @spec create_analog_input(
-          pid       :: pid,
-          device_id :: integer,
-          object_id :: integer,
-          name      :: String.t,
-          unit      :: atom
-        ) :: :ok | {:error, term}
+    pid       :: pid,
+    device_id :: integer,
+    object_id :: integer,
+    name      :: String.t,
+    unit      :: atom
+  ) :: :ok | {:error, term}
   def create_analog_input(pid, device_id, object_id, name, unit) do
-    request = {
+    GenServer.call(pid, {
       :create_routed_analog_input,
       device_id,
       object_id,
       name,
       unit,
-    }
-
-    GenServer.call(pid, request)
+    })
   end
 
   @doc """
@@ -44,16 +42,18 @@ defmodule BACNet.Gateway.Object do
     - `value`: The new present value to be set for the analog input.
   """
   @spec set_analog_input_present_value(
-          pid :: pid,
-          device_id :: integer,
-          object_id :: integer,
-          value :: float
-        ) :: :ok | {:error, term}
+    pid :: pid,
+    device_id :: integer,
+    object_id :: integer,
+    value :: float
+  ) :: :ok | {:error, term}
   def set_analog_input_present_value(pid, device_id, object_id, value) do
-    request =
-      {:set_routed_analog_input_value, device_id, object_id, value}
-
-    GenServer.call(pid, request)
+    GenServer.call(pid, {
+      :set_routed_analog_input_value,
+      device_id,
+      object_id,
+      value,
+    })
   end
 
   @doc """
@@ -67,17 +67,20 @@ defmodule BACNet.Gateway.Object do
     - `name`: A unique name for the object.
   """
   @spec create_multistate_input(
-          pid       :: pid,
-          device_id :: integer,
-          object_id :: integer,
-          name      :: String.t,
-          states    :: [String.t]
-        ) :: :ok | {:error, term}
+    pid       :: pid,
+    device_id :: integer,
+    object_id :: integer,
+    name      :: String.t,
+    states    :: [String.t]
+  ) :: :ok | {:error, term}
   def create_multistate_input(pid, device_id, object_id, name, states) do
-    request =
-      {:create_routed_multistate_input, device_id, object_id, name, states}
-
-    GenServer.call(pid, request)
+    GenServer.call(pid, {
+      :create_routed_multistate_input,
+      device_id,
+      object_id,
+      name,
+      states,
+    })
   end
 
   @doc """
@@ -91,15 +94,17 @@ defmodule BACNet.Gateway.Object do
   - `value`: The new present value to be set for the multistate input.
   """
   @spec set_multistate_input_present_value(
-          pid :: pid,
-          device_id :: integer,
-          object_id :: integer,
-          value :: non_neg_integer
-        ) :: :ok | {:error, term}
+    pid :: pid,
+    device_id :: integer,
+    object_id :: integer,
+    value :: non_neg_integer
+  ) :: :ok | {:error, term}
   def set_multistate_input_present_value(pid, device_id, object_id, value) do
-    request =
-      {:set_routed_multistate_input_value, device_id, object_id, value}
-
-    GenServer.call(pid, request)
+    GenServer.call(pid, {
+      :set_routed_multistate_input_value,
+      device_id,
+      object_id,
+      value,
+    })
   end
 end

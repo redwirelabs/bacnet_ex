@@ -13,6 +13,14 @@
 #include "log.h"
 #include "protocol/decode_call.h"
 
+#define REPLY_OK(reply) \
+  ei_x_encode_atom(reply, "ok")
+
+#define REPLY_ERROR(reply, reason)    \
+  ei_x_encode_tuple_header(reply, 2); \
+  ei_x_encode_atom(reply, "error");   \
+  ei_x_encode_atom(reply, reason)
+
 static pthread_t thread_id;
 pthread_mutex_t exit_signal_lock = PTHREAD_MUTEX_INITIALIZER;
 static bool should_exit = false;
@@ -127,21 +135,17 @@ void handle_bacnet_request(char* buffer, int* index, ei_x_buff* reply)
     || type == CALL_UNKNOWN;
 
   if (is_bad_request) {
-    ei_x_encode_tuple_header(reply, 2);
-    ei_x_encode_atom(reply, "error");
-    ei_x_encode_atom(reply, "bad_request");
+    REPLY_ERROR(reply, "bad_request");
     goto cleanup;
   }
 
   call_handler_t handler = CALL_HANDLERS_BY_TYPE[type];
 
   if (handler(data)) {
-    ei_x_encode_tuple_header(reply, 2);
-    ei_x_encode_atom(reply, "error");
-    ei_x_encode_atom(reply, "failed_processing");
+    REPLY_ERROR(reply, "failed_processing");
   }
   else {
-    ei_x_encode_atom(reply, "ok");
+    REPLY_OK(reply);
   }
 
 cleanup:
@@ -150,7 +154,7 @@ cleanup:
 
 static void* event_loop(void* arg)
 {
-  int NETWORK_IDS[2] = {bacnet_network_id, -1};
+  int     network_ids[2]   = { bacnet_network_id, -1 };
   uint8_t buffer[MAX_MPDU] = { 0 };
 
   LOG_DEBUG("bacnetd: starting event_loop");
@@ -172,29 +176,27 @@ static void* event_loop(void* arg)
       continue;
 
     LOG_DEBUG("bacnetd: sending request to npdu handler");
-    routing_npdu_handler(&src_address, NETWORK_IDS, &buffer[0], length);
+    routing_npdu_handler(&src_address, network_ids, &buffer[0], length);
   }
 
   pthread_exit(NULL);
 }
 
-static void
-abort_handler(
+static void abort_handler(
   BACNET_ADDRESS* src,
   uint8_t invoke_id,
   uint8_t abort_reason,
-  bool server)
-{
+  bool server
+) {
   const char* reason = bactext_abort_reason_name(abort_reason);
   LOG_WARNING("bacnetd: aborting request %s", reason);
 }
 
-static void
-reject_handler(
+static void reject_handler(
   BACNET_ADDRESS* src,
   uint8_t invoke_id,
-  uint8_t reject_reason)
-{
+  uint8_t reject_reason
+) {
   const char* reason = bactext_reject_reason_name(reject_reason);
   LOG_DEBUG("bacnetd: rejecting request %s", reason);
 }
@@ -408,7 +410,8 @@ static int handle_create_routed_device(create_routed_device_t* device)
       &device->name,
       device->description,
       device->model,
-      device->firmware_version);
+      device->firmware_version
+    );
 
   DEVICE_OBJECT_DATA* child = Get_Routed_Device_Object(index);
   set_device_address(child, bacnet_network_id);

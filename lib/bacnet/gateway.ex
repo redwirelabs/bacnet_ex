@@ -8,24 +8,22 @@ defmodule BACNet.Gateway do
   BACnet process and it is assumed to be the first Routed device created.
   """
   @spec create(
-          pid :: pid,
-          gateway_id :: integer,
-          name :: String.t(),
-          description :: String.t(),
-          model :: String.t(),
-          firmware_version :: String.t()
-        ) :: :ok | {:error, term}
+    pid :: pid,
+    gateway_id :: integer,
+    name :: String.t(),
+    description :: String.t(),
+    model :: String.t(),
+    firmware_version :: String.t()
+  ) :: :ok | {:error, term}
   def create(pid, gateway_id, name, description, model, firmware_version) do
-    request = {
+    GenServer.call(pid, {
       :create_gateway,
       gateway_id,
       name,
       description,
       model,
       firmware_version,
-    }
-
-    GenServer.call(pid, request)
+    })
   end
 
   @doc """
@@ -41,23 +39,21 @@ defmodule BACNet.Gateway do
   - `firmware_version`: The firmware version currently running on the device.
   """
   @spec create_routed_device(
-          pid :: pid,
-          device_id :: integer,
-          name :: String.t(),
-          description :: String.t(),
-          model :: String.t(),
-          firmware_version :: String.t()
-        ) :: :ok | {:error, term}
+    pid :: pid,
+    device_id :: integer,
+    name :: String.t(),
+    description :: String.t(),
+    model :: String.t(),
+    firmware_version :: String.t()
+  ) :: :ok | {:error, term}
   def create_routed_device(pid, device_id, name, description, model, firmware_version) do
-    request = {
+    GenServer.call(pid, {
       :create_routed_device,
       device_id,
       name,
       description,
       model,
       firmware_version,
-    }
-
-    GenServer.call(pid, request)
+    })
   end
 end

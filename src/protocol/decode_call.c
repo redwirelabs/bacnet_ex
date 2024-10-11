@@ -96,11 +96,11 @@ int decode_bacnet_call_type(char* buffer, int* index, bacnet_call_type_t* type)
  *         during the decoding process.
  */
 int decode_bacnet_call(
-      char* buffer,
-      int* index,
-      bacnet_call_type_t type,
-      void* data)
-{
+  char* buffer,
+  int* index,
+  bacnet_call_type_t type,
+  void* data
+) {
   return decode_call_data(buffer, index, type, data);
 }
 
@@ -121,9 +121,11 @@ static int decode_call_type(char* buffer, int* index, uint8_t* type)
   return 0;
 }
 
-static int
-decode_create_routed_device(char* buffer, int* index, create_routed_device_t* data)
-{
+static int decode_create_routed_device(
+  char* buffer,
+  int* index,
+  create_routed_device_t* data
+) {
   long size             = 0;
   int  type             = 0;
   char name[MAXATOMLEN] = { 0 };
@@ -147,12 +149,11 @@ decode_create_routed_device(char* buffer, int* index, create_routed_device_t* da
   return is_invalid ? -1 : 0;
 }
 
-static int
-decode_bacnet_unit_atom(
+static int decode_bacnet_unit_atom(
   char* buffer,
   int* index,
-  BACNET_ENGINEERING_UNITS* unit)
-{
+  BACNET_ENGINEERING_UNITS* unit
+) {
   char atom[MAXATOMLEN] = { 0 };
 
   if (ei_decode_atom(buffer, index, atom) == -1)
@@ -167,12 +168,11 @@ decode_bacnet_unit_atom(
   return 0;
 }
 
-static int
-decode_create_routed_analog_input(
+static int decode_create_routed_analog_input(
   char* buffer,
   int* index,
-  create_routed_analog_input_t* data)
-{
+  create_routed_analog_input_t* data
+) {
   long size = 0;
   int  type = 0;
 
@@ -188,12 +188,11 @@ decode_create_routed_analog_input(
   return is_invalid ? -1 : 0;
 }
 
-static int
-decode_set_routed_analog_input_value(
+static int decode_set_routed_analog_input_value(
   char* buffer,
   int* index,
-  set_routed_analog_input_value_t* data)
-{
+  set_routed_analog_input_value_t* data
+) {
   bool is_invalid =
        ei_decode_ulong(buffer, index, (unsigned long*)&data->device_bacnet_id)
     || ei_decode_ulong(buffer, index, (unsigned long*)&data->object_bacnet_id)
@@ -202,13 +201,12 @@ decode_set_routed_analog_input_value(
   return is_invalid ? -1 : 0;
 }
 
-static int
-decode_multistate_states(
+static int decode_multistate_states(
   char* buffer,
   int* index,
   char** out,
-  size_t* out_length)
-{
+  size_t* out_length
+) {
   int  type        = 0;
   long atom_size   = 0;
   int  atoms_count = 0;
@@ -245,12 +243,11 @@ decode_multistate_states(
   return 0;
 }
 
-static int
-decode_create_routed_multistate_input(
+static int decode_create_routed_multistate_input(
   char* buffer,
   int* index,
-  create_routed_multistate_input_t* data)
-{
+  create_routed_multistate_input_t* data
+) {
   long size = 0;
   int  type = 0;
 
@@ -266,12 +263,11 @@ decode_create_routed_multistate_input(
   return is_invalid ? -1 : 0;
 }
 
-static int
-decode_set_routed_multistate_input_value(
+static int decode_set_routed_multistate_input_value(
   char* buffer,
   int* index,
-  set_routed_multistate_input_value_t* data)
-{
+  set_routed_multistate_input_value_t* data
+) {
   bool is_invalid =
        ei_decode_ulong(buffer, index, (unsigned long*)&data->device_bacnet_id)
     || ei_decode_ulong(buffer, index, (unsigned long*)&data->object_bacnet_id)
@@ -280,9 +276,12 @@ decode_set_routed_multistate_input_value(
   return is_invalid ? -1 : 0;
 }
 
-static int
-decode_call_data(char* buffer, int* index, bacnet_call_type_t type, void* data)
-{
+static int decode_call_data(
+  char* buffer,
+  int* index,
+  bacnet_call_type_t type,
+  void* data
+) {
   switch(type) {
     case CALL_CREATE_GATEWAY:
       return decode_create_routed_device(buffer, index, data);

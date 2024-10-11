@@ -26,11 +26,14 @@ defmodule BACNet do
     bacnetd_exe = "#{:code.priv_dir(:bacnet)}/bacnetd"
 
     env =
-      []
-      |> maybe_add_env(~c"BACNET_IFACE", args[:network_interface])
-      |> maybe_add_env(~c"BACNET_NETWORK_ID", args[:network_id])
-      |> maybe_add_env(~c"BACNET_VENDOR_ID", args[:vendor_id])
-      |> maybe_add_env(~c"BACNET_VENDOR_NAME", args[:vendor_name])
+      [
+        {~c"BACNET_IFACE", args[:network_interface]},
+        {~c"BACNET_NETWORK_ID", args[:network_id]},
+        {~c"BACNET_VENDOR_ID", args[:vendor_id]},
+        {~c"BACNET_VENDOR_NAME", args[:vendor_name]},
+      ]
+      |> Enum.reject(fn {_key, value} -> is_nil(value) end)
+      |> Enum.map(fn {key, value} -> {key, to_charlist(value)} end)
 
     port =
       Port.open(
@@ -75,7 +78,4 @@ defmodule BACNet do
   defp process_message(unknown) do
     Logger.warning("Unknown message received #{inspect(unknown)}")
   end
-
-  defp maybe_add_env(env, _key, nil), do: env
-  defp maybe_add_env(env, key, value), do: [{key, to_charlist(value)} | env]
 end
