@@ -15,7 +15,6 @@ defmodule BACNet.MixProject do
       start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls, test_task: "espec"],
       dialyzer: [
-        ignore_warnings: "dialyzer.ignore.exs",
         list_unused_filters: true,
         plt_file: {:no_warn, plt_file_path()},
       ],
@@ -33,7 +32,6 @@ defmodule BACNet.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {BACNet.Application, []}
     ]
   end
 
@@ -71,7 +69,7 @@ defmodule BACNet.MixProject do
 
   defp package do
     [
-      licenses: ["Apache-2.0"],
+      licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/redwirelabs/bacnet_ex"},
       maintainers: ["Abelino Romo"],
       files: [
