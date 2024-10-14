@@ -1,0 +1,87 @@
+From f980f7bd4b104b5761989d11b89e5dbb10b5aced Mon Sep 17 00:00:00 2001
+From: abelino <abelino.romo@gmail.com>
+Date: Tue, 1 Oct 2024 09:28:57 -0700
+Subject: [PATCH] Add configurable vendor-name support
+
+---
+ src/bacnet/basic/object/device.c | 14 +++++++++++++-
+ src/bacnet/basic/object/device.h |  3 +++
+ src/bacnet/datalink/dlenv.c      | 11 +++++++++++
+ 3 files changed, 27 insertions(+), 1 deletion(-)
+
+diff --git a/src/bacnet/basic/object/device.c b/src/bacnet/basic/object/device.c
+index 2eba72ca..963cc532 100644
+--- a/src/bacnet/basic/object/device.c
++++ b/src/bacnet/basic/object/device.c
+@@ -574,7 +574,7 @@ bool Device_Objects_Property_List_Member(
+ static uint32_t Object_Instance_Number = 260001;
+ static BACNET_CHARACTER_STRING My_Object_Name;
+ static BACNET_DEVICE_STATUS System_Status = STATUS_OPERATIONAL;
+-static char *Vendor_Name = BACNET_VENDOR_NAME;
++static char Vendor_Name[MAX_DEV_MOD_LEN + 1] = BACNET_VENDOR_NAME;
+ static uint16_t Vendor_Identifier = BACNET_VENDOR_ID;
+ static char Model_Name[MAX_DEV_MOD_LEN + 1] = "GNU";
+ static char Application_Software_Version[MAX_DEV_VER_LEN + 1] = "1.0";
+@@ -874,6 +874,18 @@ const char *Device_Vendor_Name(void)
+     return Vendor_Name;
+ }
+ 
++bool Device_Set_Vendor_Name(char *name)
++{
++    int length = strlen(name);
++    if (length >= sizeof(Vendor_Name))
++        return false;
++
++    memset(Vendor_Name, 0, sizeof(Vendor_Name));
++    memmove(Vendor_Name, name, length);
++
++    return true;
++}
++
+ /** Returns the Vendor ID for this Device.
+  * See the assignments at
+  * http://www.bacnet.org/VendorID/BACnet%20Vendor%20IDs.htm
+diff --git a/src/bacnet/basic/object/device.h b/src/bacnet/basic/object/device.h
+index 2e5c6c86..8bfd235c 100644
+--- a/src/bacnet/basic/object/device.h
++++ b/src/bacnet/basic/object/device.h
+@@ -381,6 +381,9 @@ extern "C" {
+     const char *Device_Vendor_Name(
+         void);
+ 
++    BACNET_STACK_EXPORT
++    bool Device_Set_Vendor_Name(char *name);
++
+     BACNET_STACK_EXPORT
+     uint16_t Device_Vendor_Identifier(
+         void);
+diff --git a/src/bacnet/datalink/dlenv.c b/src/bacnet/datalink/dlenv.c
+index b699708c..1e4c0cd6 100644
+--- a/src/bacnet/datalink/dlenv.c
++++ b/src/bacnet/datalink/dlenv.c
+@@ -18,6 +18,7 @@
+ #include "bacnet/basic/services.h"
+ #include "bacnet/datalink/dlenv.h"
+ #include "bacnet/basic/tsm/tsm.h"
++#include "bacnet/basic/object/device.h"
+ #if defined(BACDL_BIP)
+ #include "bacnet/datalink/bip.h"
+ #include "bacnet/basic/bbmd/h_bbmd.h"
+@@ -669,4 +670,14 @@ void dlenv_init(void)
+ #endif
+     dlenv_network_port_init();
+     dlenv_register_as_foreign_device();
++
++    pEnv = getenv("BACNET_VENDOR_NAME");
++    if (pEnv) {
++        Device_Set_Vendor_Name(pEnv);
++    }
++
++    pEnv = getenv("BACNET_VENDOR_ID");
++    if (pEnv) {
++        Device_Set_Vendor_Identifier((uint16_t)strtol(pEnv, NULL, 0));
++    }
+ }
+-- 
+2.46.2
+
