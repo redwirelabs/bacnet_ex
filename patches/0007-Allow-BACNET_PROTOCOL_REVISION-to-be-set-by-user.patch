@@ -1,0 +1,24 @@
+From d5d222a89b61c975a2b300216f4d126dd19dc4e1 Mon Sep 17 00:00:00 2001
+From: abelino <abelino.romo@gmail.com>
+Date: Fri, 18 Oct 2024 12:57:27 -0700
+Subject: [PATCH] Allow BACNET_PROTOCOL_REVISION to be set by user
+
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 27b7df3c..1491b33c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -74,7 +74,7 @@ option(
+   "compile without datalink"
+   OFF)
+
+-set(BACNET_PROTOCOL_REVISION 19)
++set(BACNET_PROTOCOL_REVISION 19 CACHE STRING "BACnet protocol revision")
+
+ if(NOT CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE Release)
+--
+2.47.0
