@@ -20,7 +20,9 @@ CPMFindPackage(
     NAME bacnet
     GITHUB_REPOSITORY bacnet-stack/bacnet-stack
     GIT_TAG bacnet-stack-1.3.8
-    OPTIONS "BACNET_STACK_BUILD_APPS NO"
+    OPTIONS
+        "BACNET_PROTOCOL_REVISION 24"
+        "BACNET_STACK_BUILD_APPS NO"
     PATCHES ${PATCH_FILES})
 
 # setup erlang
