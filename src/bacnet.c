@@ -12,6 +12,7 @@
 #include "bacnet.h"
 #include "log.h"
 #include "protocol/decode_call.h"
+#include "object/command.h"
 
 #define REPLY_OK(reply) \
   ei_x_encode_atom(reply, "ok")
@@ -269,6 +270,28 @@ static object_functions_t SUPPORTED_OBJECT_TABLE[] = {
     .Object_Remove_List_Element = NULL,
     .Object_Create = Routed_Multistate_Input_Create,
     .Object_Delete = Routed_Multistate_Input_Delete,
+    .Object_Timer = NULL,
+  },
+  {
+    .Object_Type = OBJECT_COMMAND,
+    .Object_Init = command_init,
+    .Object_Count = command_count,
+    .Object_Index_To_Instance = command_index_to_instance,
+    .Object_Valid_Instance = command_valid_instance,
+    .Object_Name = command_object_name,
+    .Object_Read_Property = command_read_property,
+    .Object_Write_Property = command_write_property,
+    .Object_RPM_List = command_property_lists,
+    .Object_RR_Info = NULL,
+    .Object_Iterator = NULL,
+    .Object_Value_List = NULL,
+    .Object_COV = NULL,
+    .Object_COV_Clear = NULL,
+    .Object_Intrinsic_Reporting = NULL,
+    .Object_Add_List_Element = NULL,
+    .Object_Remove_List_Element = NULL,
+    .Object_Create = NULL,
+    .Object_Delete = NULL,
     .Object_Timer = NULL,
   },
 };
