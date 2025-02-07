@@ -1,6 +1,29 @@
+#include <stdlib.h>
 #include <bacnet/bacdef.h>
 #include <bacnet/rp.h>
 #include <bacnet/wp.h>
+#include <bacnet/basic/object/device.h>
+#include <bacnet/basic/object/routed_object.h>
+#include <bacnet/basic/sys/keylist.h>
+
+#include "object/command.h"
+
+static int validate_request(int apdu_len, uint32_t index, uint32_t property);
+static int action_list_encode(uint32_t instance, uint32_t index, uint8_t* apdu);
+
+static const int required_properties[] = {
+  PROP_OBJECT_IDENTIFIER,
+  PROP_OBJECT_NAME,
+  PROP_OBJECT_TYPE,
+  PROP_PRESENT_VALUE,
+  PROP_IN_PROCESS,
+  PROP_ALL_WRITES_SUCCESSFUL,
+  PROP_ACTION,
+  -1
+};
+
+static const int optional_properties[] = { -1 };
+static const int proprietary_properties[] = { -1 };
 
 /**
  * @brief Attempts to set required, optional and proprietary command properties.
@@ -11,35 +34,64 @@
  * @param proprietary - BACnet proprietary properties for a Command object.
  */
 void command_property_lists(
-  const int **required,
-  const int **optional,
-  const int **proprietary
+  const int** required,
+  const int** optional,
+  const int** proprietary
 ) {
-  static const int required_list[] = {
-    PROP_OBJECT_IDENTIFIER,
-    PROP_OBJECT_NAME,
-    PROP_OBJECT_TYPE,
-    PROP_PRESENT_VALUE,
-    PROP_IN_PROCESS,
-    PROP_ALL_WRITES_SUCCESSFUL,
-    PROP_ACTION,
-    -1
-  };
+  if (required) *required = required_properties;
+  if (optional) *optional = optional_properties;
+  if (proprietary) *proprietary = proprietary_properties;
+}
 
-  static const int optional_list[] = { -1 };
-  static const int proprietary_list[] = { -1 };
+/**
+ * @brief Handles any setup required to create Command object.
+ */
+void command_init(void)
+{
+  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
 
-  if (required) *required = required_list;
-  if (optional) *optional = optional_list;
-  if (proprietary) *proprietary = proprietary_list;
+  if (device->objects == NULL)
+    device->objects = Keylist_Create();
 }
 
 /**
  * @brief Initializes a Command object.
+ *
+ * @param instance - Object instance number.
+ *
+ * @return BACNET_MAX_INSTANCE on error and a valid instance number on success.
  */
-void command_init(void)
+uint32_t command_create(uint32_t instance)
 {
-  return;
+  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
+
+  if (instance >= BACNET_MAX_INSTANCE)
+    return BACNET_MAX_INSTANCE;
+
+  COMMAND_OBJECT* object =
+    Keylist_Data(device->objects, instance);
+
+  if (object != NULL)
+    return instance;
+
+  object = calloc(1, sizeof(COMMAND_OBJECT));
+  if (!object)
+    return BACNET_MAX_INSTANCE;
+
+  object->type          = OBJECT_COMMAND;
+  object->present_value = 0;
+  object->in_progress   = false;
+  object->successful    = true;
+
+  memset(object->name, 0, sizeof(object->name));
+  memset(object->description, 0, sizeof(object->description));
+
+  if (Keylist_Data_Add(device->objects, instance, object) < 0) {
+    free(object);
+    return BACNET_MAX_INSTANCE;
+  }
+
+  return instance;
 }
 
 /**
@@ -48,7 +100,9 @@ void command_init(void)
  */
 unsigned command_count(void)
 {
-  return -1;
+  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
+
+  return Routed_Object_Count_By_Type(device->objects, OBJECT_COMMAND);
 }
 
 /**
@@ -60,7 +114,12 @@ unsigned command_count(void)
  */
 uint32_t command_index_to_instance(unsigned index)
 {
-  return -1;
+  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
+
+  KEY key = UINT32_MAX;
+  Routed_Object_Index_Key(device->objects, OBJECT_COMMAND, index, &key);
+
+  return key;
 }
 
 /**
@@ -70,7 +129,13 @@ uint32_t command_index_to_instance(unsigned index)
  */
 bool command_valid_instance(uint32_t instance)
 {
-  return false;
+  DEVICE_OBJECT_DATA* device  = Get_Routed_Device_Object(-1);
+  COMMAND_OBJECT*     object = Keylist_Data(device->objects, instance);
+
+  if (!object) return false;
+  if (object->type != OBJECT_COMMAND) return false;
+
+  return true;
 }
 
 /**
@@ -79,9 +144,37 @@ bool command_valid_instance(uint32_t instance)
  * @param[in] instance - Object instance number.
  * @param[out] name - The Objects's name.
  */
-bool command_object_name(uint32_t instance, BACNET_CHARACTER_STRING *name)
+bool command_object_name(uint32_t instance, BACNET_CHARACTER_STRING* name)
 {
-  return false;
+  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
+
+  COMMAND_OBJECT* object =
+    Keylist_Data(device->objects, instance);
+
+  if (object == NULL) return false;
+  if (strlen(object->name) <= 0) return false;
+
+  return characterstring_init_ansi(name, object->name);
+}
+
+/**
+ * @brief Set a Command Object's name.
+ *
+ * @param instance - Object instance number.
+ * @param name - The Objects's name.
+ */
+bool command_name_set(uint32_t instance, char *name)
+{
+  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
+  COMMAND_OBJECT*     object = Keylist_Data(device->objects, instance);
+
+  if (!object || strlen(name) >= MAX_OBJ_NAME_LEN)
+    return false;
+
+  memset(object->name, 0, sizeof(object->name));
+  strcpy(object->name, name);
+
+  return true;
 }
 
 /**
@@ -91,11 +184,91 @@ bool command_object_name(uint32_t instance, BACNET_CHARACTER_STRING *name)
  *
  * @return Byte count of the APDU or BACNET_STATUS_ERROR.
  */
-int command_read_property(BACNET_READ_PROPERTY_DATA *data)
+int command_read_property(BACNET_READ_PROPERTY_DATA* data)
 {
-  return -1;
+  bool is_data_invalid =
+       data == NULL
+    || data->application_data == NULL
+    || data->application_data_len == 0;
+
+  if (is_data_invalid) return 0;
+
+  uint32_t instance = data->object_instance;
+
+  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
+  COMMAND_OBJECT*     object = Keylist_Data(device->objects, instance);
+
+  int apdu_len  = 0;
+  uint8_t* apdu = data->application_data;
+
+  switch (data->object_property) {
+    case PROP_OBJECT_IDENTIFIER:
+      apdu_len =
+        encode_application_object_id(&apdu[0], OBJECT_COMMAND, instance);
+      break;
+
+    case PROP_OBJECT_NAME:
+      BACNET_CHARACTER_STRING name;
+      command_object_name(instance, &name);
+      apdu_len = encode_application_character_string(&apdu[0], &name);
+      break;
+
+    case PROP_OBJECT_TYPE:
+      apdu_len = encode_application_enumerated(&apdu[0], OBJECT_COMMAND);
+      break;
+
+    case PROP_PRESENT_VALUE:
+      apdu_len =
+        encode_application_unsigned(&apdu[0], object->present_value);
+      break;
+
+    case PROP_IN_PROCESS:
+      apdu_len = encode_application_boolean(&apdu[0], object->in_progress);
+      break;
+
+    case PROP_ALL_WRITES_SUCCESSFUL:
+      apdu_len = encode_application_boolean(&apdu[0], object->successful);
+      break;
+
+    case PROP_ACTION:
+      apdu_len =
+        bacnet_array_encode(
+          instance,
+          data->array_index,
+          action_list_encode,
+          MAX_COMMAND_ACTIONS,
+          apdu,
+          data->application_data_len
+        );
+
+      if (apdu_len == BACNET_STATUS_ABORT) {
+        data->error_code = ERROR_CODE_ABORT_SEGMENTATION_NOT_SUPPORTED;
+      }
+      else if (apdu_len == BACNET_STATUS_ERROR) {
+        data->error_class = ERROR_CLASS_PROPERTY;
+        data->error_code  = ERROR_CODE_INVALID_ARRAY_INDEX;
+      }
+      break;
+
+    default:
+      data->error_class = ERROR_CLASS_PROPERTY;
+      data->error_code  = ERROR_CODE_UNKNOWN_PROPERTY;
+      apdu_len          = BACNET_STATUS_ERROR;
+      break;
+  }
+
+  apdu_len =
+    validate_request(apdu_len, data->array_index, data->object_property);
+
+  if (apdu_len == BACNET_STATUS_ERROR) {
+    data->error_class = ERROR_CLASS_PROPERTY;
+    data->error_code  = ERROR_CODE_PROPERTY_IS_NOT_AN_ARRAY;
+  }
+
+  return apdu_len;
 }
 
+// TODO: needs to write back to erlang port
 /**
  * @brief BACnet write-property handler for a Command Object.
  *
@@ -103,7 +276,108 @@ int command_read_property(BACNET_READ_PROPERTY_DATA *data)
  *
  * @return true if no errors occur.
  */
-bool command_write_property(BACNET_WRITE_PROPERTY_DATA *data)
+bool command_write_property(BACNET_WRITE_PROPERTY_DATA* data)
 {
+  BACNET_APPLICATION_DATA_VALUE value;
+
+  int len =
+    bacapp_decode_application_data(
+      data->application_data,
+      data->application_data_len,
+      &value
+    );
+
+  if (len < 0) {
+    data->error_class = ERROR_CLASS_PROPERTY;
+    data->error_code  = ERROR_CODE_VALUE_OUT_OF_RANGE;
+    return false;
+  }
+
+  len = validate_request(len, data->array_index, data->object_property);
+  if (len == BACNET_STATUS_ERROR) {
+    data->error_class = ERROR_CLASS_PROPERTY;
+    data->error_code  = ERROR_CODE_PROPERTY_IS_NOT_AN_ARRAY;
+    return false;
+  }
+
+  uint32_t instance = data->object_instance;
+
+  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
+  COMMAND_OBJECT*     object = Keylist_Data(device->objects, instance);
+
+  if (!object) return false;
+
+  switch (data->object_property) {
+    case PROP_PRESENT_VALUE:
+      bool status =
+        write_property_type_valid(
+          data,
+          &value,
+          BACNET_APPLICATION_TAG_UNSIGNED_INT
+        );
+
+      if (!status) {
+        data->error_class = ERROR_CLASS_PROPERTY;
+        data->error_code  = ERROR_CODE_WRITE_ACCESS_DENIED;
+        return false;
+      }
+
+      if (value.type.Unsigned_Int >= MAX_COMMAND_ACTIONS) {
+        data->error_class = ERROR_CLASS_PROPERTY;
+        data->error_code  = ERROR_CODE_VALUE_OUT_OF_RANGE;
+        return false;
+      }
+
+      object->present_value = value.type.Unsigned_Int;
+      return true;
+    default:
+      bool is_valid_prop =
+        property_lists_member(
+          required_properties,
+          optional_properties,
+          proprietary_properties,
+          data->object_property
+        );
+
+      if (is_valid_prop) {
+        data->error_class = ERROR_CLASS_PROPERTY;
+        data->error_code  = ERROR_CODE_WRITE_ACCESS_DENIED;
+      }
+      else {
+        data->error_class = ERROR_CLASS_PROPERTY;
+        data->error_code  = ERROR_CODE_UNKNOWN_PROPERTY;
+      }
+      break;
+  }
+
   return false;
+}
+
+static int validate_request(
+  int apdu_len,
+  BACNET_ARRAY_INDEX array_index,
+  BACNET_PROPERTY_ID object_property
+) {
+  if (apdu_len < 0) return apdu_len;
+
+  bool requesting_array_index = array_index != BACNET_ARRAY_ALL;
+  if (requesting_array_index && object_property != PROP_ACTION) {
+    return BACNET_STATUS_ERROR;
+  }
+
+  return apdu_len;
+}
+
+static int action_list_encode(
+  uint32_t instance,
+  BACNET_ARRAY_INDEX index,
+  uint8_t* apdu
+) {
+  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
+  COMMAND_OBJECT*     object = Keylist_Data(device->objects, instance);
+
+  if (!object || index >= MAX_COMMAND_ACTIONS)
+    return BACNET_STATUS_ERROR;
+
+  return bacnet_action_command_encode(apdu, &object->actions[index]);
 }
