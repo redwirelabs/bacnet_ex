@@ -12,6 +12,7 @@ defmodule BACNet.MixProject do
       deps: deps(),
       docs: docs(),
       compilers: [:cmake] ++ Mix.compilers(),
+      cmake_env: %{"MAKEFLAGS" => "-j#{nproc()}"},
       start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls, test_task: "espec"],
       dialyzer: [
@@ -99,5 +100,9 @@ defmodule BACNet.MixProject do
     [Mix.Project.build_path(), "plt", "dialyxir.plt"]
     |> Path.join()
     |> Path.expand()
+  end
+
+  defp nproc do
+    :erlang.system_info(:logical_processors)
   end
 end
