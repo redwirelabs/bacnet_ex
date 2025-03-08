@@ -62,7 +62,8 @@ set(SOURCES
     src/port.c
     src/object/command.c
     src/protocol/decode_call.c
-    src/protocol/enum.c)
+    src/protocol/enum.c
+    src/protocol/event.c)
 
 # build
 project(bacnetd)

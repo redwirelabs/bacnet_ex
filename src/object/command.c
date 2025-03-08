@@ -7,6 +7,7 @@
 #include <bacnet/basic/sys/keylist.h>
 
 #include "object/command.h"
+#include "protocol/event.h"
 
 static int validate_request(int apdu_len, uint32_t index, uint32_t property);
 static int action_list_encode(uint32_t instance, uint32_t index, uint8_t* apdu);
@@ -61,11 +62,13 @@ void command_init(void)
  *
  * @return BACNET_MAX_INSTANCE on error and a valid instance number on success.
  */
-uint32_t command_create(uint32_t instance)
+uint32_t
+command_create(DEVICE_OBJECT_DATA* device, uint32_t instance, char* name)
 {
-  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
-
   if (instance >= BACNET_MAX_INSTANCE)
+    return BACNET_MAX_INSTANCE;
+
+  if (strlen(name) <= 0)
     return BACNET_MAX_INSTANCE;
 
   COMMAND_OBJECT* object =
@@ -144,7 +147,7 @@ bool command_valid_instance(uint32_t instance)
  * @param[in] instance - Object instance number.
  * @param[out] name - The Objects's name.
  */
-bool command_object_name(uint32_t instance, BACNET_CHARACTER_STRING* name)
+bool command_name(uint32_t instance, BACNET_CHARACTER_STRING* name)
 {
   DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
 
@@ -178,6 +181,39 @@ bool command_name_set(uint32_t instance, char *name)
 }
 
 /**
+ * @brief Set the present value of a Command Object.
+ *
+ * @param device - The BACnet device that owns the Command Object.
+ * @param instance - Object instance number.
+ * @param value - The Objects's present value.
+ *
+ * @note Setting the value will also set the in-progress flag to true.
+ */
+bool command_present_value_set(COMMAND_OBJECT* object, uint32_t value)
+{
+  object->present_value = value;
+  object->in_progress   = true;
+
+  return true;
+}
+
+/**
+ * @brief Update the Command's status.
+ *
+ * @param object - The Command Object to update.
+ * @param successful - True if the command succeeded.
+ *
+ * @note Resets in_progress to false.
+ */
+bool command_update_status(COMMAND_OBJECT* object, bool successful)
+{
+  object->in_progress = false;
+  object->successful  = successful;
+
+  return true;
+ }
+
+/**
  * @brief BACnet read-property handler for a Command Object.
  *
  * @param[out] data - Holds request and reply data.
@@ -209,7 +245,7 @@ int command_read_property(BACNET_READ_PROPERTY_DATA* data)
 
     case PROP_OBJECT_NAME:
       BACNET_CHARACTER_STRING name;
-      command_object_name(instance, &name);
+      command_name(instance, &name);
       apdu_len = encode_application_character_string(&apdu[0], &name);
       break;
 
@@ -242,7 +278,8 @@ int command_read_property(BACNET_READ_PROPERTY_DATA* data)
         );
 
       if (apdu_len == BACNET_STATUS_ABORT) {
-        data->error_code = ERROR_CODE_ABORT_SEGMENTATION_NOT_SUPPORTED;
+        data->error_class = ERROR_CLASS_COMMUNICATION;
+        data->error_code  = ERROR_CODE_ABORT_SEGMENTATION_NOT_SUPPORTED;
       }
       else if (apdu_len == BACNET_STATUS_ERROR) {
         data->error_class = ERROR_CLASS_PROPERTY;
@@ -268,7 +305,6 @@ int command_read_property(BACNET_READ_PROPERTY_DATA* data)
   return apdu_len;
 }
 
-// TODO: needs to write back to erlang port
 /**
  * @brief BACnet write-property handler for a Command Object.
  *
@@ -305,10 +341,20 @@ bool command_write_property(BACNET_WRITE_PROPERTY_DATA* data)
   DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
   COMMAND_OBJECT*     object = Keylist_Data(device->objects, instance);
 
-  if (!object) return false;
+  if (object == NULL) {
+    data->error_class = ERROR_CLASS_OBJECT;
+    data->error_code  = ERROR_CODE_UNKNOWN_OBJECT;
+    return false;
+  }
 
   switch (data->object_property) {
     case PROP_PRESENT_VALUE:
+      if (object->in_progress) {
+        data->error_class = ERROR_CLASS_OBJECT;
+        data->error_code  = ERROR_CODE_BUSY;
+        return false;
+      }
+
       bool status =
         write_property_type_valid(
           data,
@@ -328,8 +374,17 @@ bool command_write_property(BACNET_WRITE_PROPERTY_DATA* data)
         return false;
       }
 
-      object->present_value = value.type.Unsigned_Int;
-      return true;
+      if (!command_present_value_set(object, value.type.Unsigned_Int))
+        return false;
+
+      int sent_ret =
+        cast_command(
+          device->bacObj.Object_Instance_Number,
+          instance,
+          value.type.Unsigned_Int
+        );
+
+      return sent_ret == 0;
     default:
       bool is_valid_prop =
         property_lists_member(
