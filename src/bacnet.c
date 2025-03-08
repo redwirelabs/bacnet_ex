@@ -278,7 +278,7 @@ static object_functions_t SUPPORTED_OBJECT_TABLE[] = {
     .Object_Count = command_count,
     .Object_Index_To_Instance = command_index_to_instance,
     .Object_Valid_Instance = command_valid_instance,
-    .Object_Name = command_object_name,
+    .Object_Name = command_name,
     .Object_Read_Property = command_read_property,
     .Object_Write_Property = command_write_property,
     .Object_RPM_List = command_property_lists,
@@ -507,6 +507,41 @@ handle_set_routed_multistate_value(set_routed_multistate_input_value_t* params)
     params->object_bacnet_id,
     params->value
   );
+
+  Get_Routed_Device_Object(0);
+
+  return 0;
+}
+
+static int handle_create_routed_command(create_routed_command_t* params)
+{
+  uint32_t device_index =
+    Routed_Device_Instance_To_Index(params->device_bacnet_id);
+
+  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(device_index);
+
+  uint32_t bacnet_id =
+    command_create(device, params->object_bacnet_id, params->name);
+
+  if (bacnet_id != params->object_bacnet_id)
+    return -1;
+
+  Get_Routed_Device_Object(0);
+
+  return 0;
+}
+
+static int handle_set_routed_command_status(set_routed_command_status_t* params)
+{
+  uint32_t device_index =
+    Routed_Device_Instance_To_Index(params->device_bacnet_id);
+
+  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(device_index);
+  COMMAND_OBJECT*     object = Keylist_Data(device->objects, params->object_bacnet_id);
+
+  if (!object) return -1;
+
+  command_update_status(object, params->status);
 
   Get_Routed_Device_Object(0);
 
