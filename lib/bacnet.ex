@@ -28,6 +28,7 @@ defmodule BACNet do
     env =
       [
         {~c"BACNET_IFACE", args[:network_interface]},
+        {~c"BACNET_IP_PORT", args[:network_port]},
         {~c"BACNET_NETWORK_ID", args[:network_id]},
         {~c"BACNET_VENDOR_ID", args[:vendor_id]},
         {~c"BACNET_VENDOR_NAME", args[:vendor_name]},
