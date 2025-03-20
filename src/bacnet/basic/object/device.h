@@ -21,6 +21,7 @@
 #include "bacnet/rp.h"
 #include "bacnet/rpm.h"
 #include "bacnet/readrange.h"
+#include "bacnet/basic/sys/keylist.h"
 
 /** Called so a BACnet object can perform any necessary initialization.
  * @ingroup ObjHelpers
@@ -186,8 +187,13 @@ typedef struct devObj_s {
     /** Device Description. */
     char Description[MAX_DEV_DESC_LEN];
 
-    /** The upcounter that shows if the Device ID or object structure has
-     * changed. */
+    char Model[MAX_DEV_MOD_LEN];
+
+    char Firmware_Version[MAX_DEV_VER_LEN];
+
+    OS_Keylist objects;
+
+    /** The upcounter that shows if the Device ID or object structure has changed. */
     uint32_t Database_Revision;
 } DEVICE_OBJECT_DATA;
 
@@ -413,8 +419,10 @@ void Routing_Device_Init(uint32_t first_object_instance);
 BACNET_STACK_EXPORT
 uint16_t Add_Routed_Device(
     uint32_t Object_Instance,
-    const BACNET_CHARACTER_STRING *Object_Name,
-    const char *Description);
+    BACNET_CHARACTER_STRING * Object_Name,
+    const char *Description,
+    const char *Model,
+    const char *Firmware_Version);
 BACNET_STACK_EXPORT
 DEVICE_OBJECT_DATA *Get_Routed_Device_Object(int idx);
 BACNET_STACK_EXPORT
@@ -432,6 +440,9 @@ bool Routed_Device_Is_Valid_Network(uint16_t dest_net, const int *DNET_list);
 BACNET_STACK_EXPORT
 uint32_t Routed_Device_Index_To_Instance(unsigned index);
 BACNET_STACK_EXPORT
+uint32_t Routed_Device_Instance_To_Index(uint32_t Instance_Number);
+
+BACNET_STACK_EXPORT
 bool Routed_Device_Valid_Object_Instance_Number(uint32_t object_id);
 BACNET_STACK_EXPORT
 bool Routed_Device_Name(
@@ -445,6 +456,14 @@ bool Routed_Device_Set_Object_Name(
     uint8_t encoding, const char *value, size_t length);
 BACNET_STACK_EXPORT
 bool Routed_Device_Set_Description(const char *name, size_t length);
+BACNET_STACK_EXPORT
+bool Routed_Device_Set_Model(
+    const char *value,
+    size_t length);
+BACNET_STACK_EXPORT
+bool Routed_Device_Set_Firmware_Version(
+    const char *value,
+    size_t length);
 BACNET_STACK_EXPORT
 void Routed_Device_Inc_Database_Revision(void);
 BACNET_STACK_EXPORT
