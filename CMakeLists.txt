@@ -49,10 +49,18 @@ set(SOURCES
     src/protocol/decode_call.c
     src/protocol/enum.c)
 
+# If not built by Mix, it is necessary to set the variable to
+# the current directory
+if(DEFINED ENV{MIX_APP_PATH} AND NOT "$ENV{MIX_APP_PATH}" STREQUAL "")
+    set(MIX_APP_PATH $ENV{MIX_APP_PATH})
+else()
+    set(MIX_APP_PATH ".")
+endif()
+
 # build
 project(bacnetd)
 set(CMAKE_BUILD_TYPE Release)
 add_executable(bacnetd ${SOURCES})
 set_target_properties(bacnetd PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE $ENV{MIX_APP_PATH}/priv)
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${MIX_APP_PATH}/priv)
 target_link_libraries(bacnetd PRIVATE ${ERLANG_EI_LIB})
