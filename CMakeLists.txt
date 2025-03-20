@@ -13,17 +13,26 @@ if(NOT EXISTS ${CPM_PATH})
 endif()
 include(${CPM_PATH})
 
-file(GLOB PATCH_FILES "${CMAKE_SOURCE_DIR}/patches/*.patch")
+# Don't need the patches for the current method
+# file(GLOB PATCH_FILES "${CMAKE_SOURCE_DIR}/patches/*.patch")
 
 # dependencies
-CPMFindPackage(
-    NAME bacnet
-    GITHUB_REPOSITORY bacnet-stack/bacnet-stack
-    GIT_TAG bacnet-stack-1.3.8
-    OPTIONS
-        "BACNET_PROTOCOL_REVISION 24"
-        "BACNET_STACK_BUILD_APPS NO"
-    PATCHES ${PATCH_FILES})
+#CPMFindPackage(
+#    NAME bacnet
+#    GITHUB_REPOSITORY bacnet-stack/bacnet-stack
+#    GIT_TAG bacnet-stack-1.3.8
+#    OPTIONS
+#        "BACNET_PROTOCOL_REVISION 24"
+#        "BACNET_STACK_BUILD_APPS NO"
+#    PATCHES ${PATCH_FILES})
+
+# setup karg
+# set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CMAKE_SOURCE_DIR}/karg/bacnet)
+
+# old try - trying from our first idea "use karg/ directory"
+# include_directories(karg/src/bacnet)
+# file(GLOB_RECURSE KARG_SOURCES "karg/src/bacnet/*.c")
+# file(GLOB_RECURSE KARG_HEADERS "karg/src/bacnet/*.h")
 
 # setup erlang
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} $ENV{ERL_EI_LIBDIR})
@@ -46,4 +55,4 @@ set(CMAKE_BUILD_TYPE Release)
 add_executable(bacnetd ${SOURCES})
 set_target_properties(bacnetd PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELEASE $ENV{MIX_APP_PATH}/priv)
-target_link_libraries(bacnetd PRIVATE bacnet-stack ${ERLANG_EI_LIB})
+target_link_libraries(bacnetd PRIVATE ${ERLANG_EI_LIB})
