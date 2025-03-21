@@ -1,7 +1,7 @@
 #include "protocol/event.h"
 #include "port.h"
 
-int cast_command(
+int send_command(
   uint32_t device_instance,
   uint32_t object_instance,
   uint32_t value
@@ -9,7 +9,7 @@ int cast_command(
   ei_x_buff reply;
   ei_x_new_with_version(&reply);
   ei_x_encode_tuple_header(&reply, 2);
-  ei_x_encode_atom(&reply, "$gen_cast");
+  ei_x_encode_atom(&reply, "$event");
 
   // {:command, device_id, object_id, value}
   ei_x_encode_tuple_header(&reply, 4);

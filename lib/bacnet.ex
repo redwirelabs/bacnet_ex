@@ -74,7 +74,7 @@ defmodule BACNet do
     case maybe_message do
       {:log, level, message} -> Logger.log(level, message)
       {:"$gen_reply", to, result} -> GenServer.reply(to, result)
-      {:"$gen_cast", message} -> GenServer.cast(state.owner, message)
+      {:"$event", message} -> send(state.owner, message)
       {:error, :invalid_term, data} -> Logger.warning("Received bad data #{inspect(data)}")
     end
 

@@ -46,6 +46,9 @@ handle_create_routed_multistate_input(create_routed_multistate_input_t* params);
 static int
 handle_set_routed_multistate_value(set_routed_multistate_input_value_t* params);
 
+static int handle_create_routed_command(create_routed_command_t* params);
+static int handle_set_routed_command_status(set_routed_command_status_t* params);
+
 static call_handler_t CALL_HANDLERS_BY_TYPE[] = {
   (call_handler_t)handle_create_gateway,
   (call_handler_t)handle_create_routed_device,
@@ -53,6 +56,8 @@ static call_handler_t CALL_HANDLERS_BY_TYPE[] = {
   (call_handler_t)handle_set_routed_analog_input_value,
   (call_handler_t)handle_create_routed_multistate_input,
   (call_handler_t)handle_set_routed_multistate_value,
+  (call_handler_t)handle_create_routed_command,
+  (call_handler_t)handle_set_routed_command_status,
 };
 
 /**
@@ -131,9 +136,10 @@ void handle_bacnet_request(char* buffer, int* index, ei_x_buff* reply)
 
   bool is_bad_request =
        decode_bacnet_call_type(buffer, index, &type)
+    || type == CALL_UNKNOWN
+    || type > sizeof(CALL_HANDLERS_BY_TYPE)
     || bacnet_call_malloc(type, &data)
-    || decode_bacnet_call(buffer, index, type, data)
-    || type == CALL_UNKNOWN;
+    || decode_bacnet_call(buffer, index, type, data);
 
   if (is_bad_request) {
     REPLY_ERROR(reply, "bad_request");
@@ -521,7 +527,12 @@ static int handle_create_routed_command(create_routed_command_t* params)
   DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(device_index);
 
   uint32_t bacnet_id =
-    command_create(device, params->object_bacnet_id, params->name);
+    command_create(
+      device,
+      params->object_bacnet_id,
+      params->name,
+      params->description
+    );
 
   if (bacnet_id != params->object_bacnet_id)
     return -1;
@@ -541,7 +552,7 @@ static int handle_set_routed_command_status(set_routed_command_status_t* params)
 
   if (!object) return -1;
 
-  command_update_status(object, params->status);
+  command_update_status(object, params->status == COMMAND_SUCCEEDED);
 
   Get_Routed_Device_Object(0);
 

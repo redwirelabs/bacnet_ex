@@ -23,7 +23,11 @@ static const int required_properties[] = {
   -1
 };
 
-static const int optional_properties[] = { -1 };
+static const int optional_properties[] = {
+  PROP_DESCRIPTION,
+  -1
+};
+
 static const int proprietary_properties[] = { -1 };
 
 /**
@@ -62,9 +66,12 @@ void command_init(void)
  *
  * @return BACNET_MAX_INSTANCE on error and a valid instance number on success.
  */
-uint32_t
-command_create(DEVICE_OBJECT_DATA* device, uint32_t instance, char* name)
-{
+uint32_t command_create(
+  DEVICE_OBJECT_DATA* device,
+  uint32_t instance,
+  char* name,
+  char* description
+) {
   if (instance >= BACNET_MAX_INSTANCE)
     return BACNET_MAX_INSTANCE;
 
@@ -88,6 +95,9 @@ command_create(DEVICE_OBJECT_DATA* device, uint32_t instance, char* name)
 
   memset(object->name, 0, sizeof(object->name));
   memset(object->description, 0, sizeof(object->description));
+
+  memcpy(object->name, name, strlen(name));
+  memcpy(object->description, description, strlen(description));
 
   if (Keylist_Data_Add(device->objects, instance, object) < 0) {
     free(object);
@@ -144,7 +154,7 @@ bool command_valid_instance(uint32_t instance)
 /**
  * @brief Retrieve the name of a Command Object.
  *
- * @param[in] instance - Object instance number.
+ * @param[in] object - The Command Object.
  * @param[out] name - The Objects's name.
  */
 bool command_name(uint32_t instance, BACNET_CHARACTER_STRING* name)
@@ -207,8 +217,9 @@ bool command_present_value_set(COMMAND_OBJECT* object, uint32_t value)
  */
 bool command_update_status(COMMAND_OBJECT* object, bool successful)
 {
-  object->in_progress = false;
-  object->successful  = successful;
+  object->in_progress   = false;
+  object->present_value = 0;
+  object->successful    = successful;
 
   return true;
  }
@@ -378,7 +389,7 @@ bool command_write_property(BACNET_WRITE_PROPERTY_DATA* data)
         return false;
 
       int sent_ret =
-        cast_command(
+        send_command(
           device->bacObj.Object_Instance_Number,
           instance,
           value.type.Unsigned_Int
