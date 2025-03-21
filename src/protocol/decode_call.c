@@ -117,8 +117,10 @@ static int decode_call_type(char* buffer, int* index, uint8_t* type)
   }
 
   int enum_value = find_enum_value(BACNET_CALL_ATOMS, atom);
-  if (enum_value == -1)
+  if (enum_value == -1) {
+    *type = CALL_UNKNOWN;
     return -1;
+  }
 
   *type = enum_value;
 

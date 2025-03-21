@@ -3,7 +3,7 @@
 
 #include <ei.h>
 
-int cast_command(
+int send_command(
   uint32_t device_instance,
   uint32_t object_instance,
   uint32_t value);

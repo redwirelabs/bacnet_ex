@@ -154,6 +154,11 @@ defmodule BACNet.Gateway.Object do
     status     :: :succeeded | :failed
   ) :: :ok | {:error, term}
   def set_command_status(pid, device_id, object_id, status) do
-    GenServer.call(pid, {:set_command_status, device_id, object_id, status})
+    GenServer.call(pid, {
+      :set_routed_command_status,
+      device_id,
+      object_id,
+      status
+    })
   end
 end

@@ -19,11 +19,18 @@ typedef struct {
   char     name[MAX_OBJ_NAME_LEN];
   char     description[MAX_OBJ_DESC_LEN];
 
-  BACNET_ACTION_LIST actions[MAX_COMMAND_ACTIONS]; // TODO: make this dynamic?
+  // TODO: needed?
+  BACNET_ACTION_LIST actions[MAX_COMMAND_ACTIONS];
 } COMMAND_OBJECT;
 
 void command_init(void);
-uint32_t command_create(DEVICE_OBJECT_DATA* device, uint32_t instance, char* name);
+
+uint32_t command_create(
+  DEVICE_OBJECT_DATA* device,
+  uint32_t instance,
+  char* name,
+  char* description);
+
 bool command_update_status(COMMAND_OBJECT* object, bool successful);
 unsigned command_count(void);
 uint32_t command_index_to_instance(unsigned index);
