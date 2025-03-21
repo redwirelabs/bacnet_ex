@@ -13,9 +13,35 @@ if(NOT EXISTS ${CPM_PATH})
 endif()
 include(${CPM_PATH})
 
-file(GLOB PATCH_FILES "${CMAKE_SOURCE_DIR}/patches/*.patch")
+# target optimizations
+if("$ENV{MIX_ENV}" STREQUAL "prod")
+    set(CMAKE_BUILD_TYPE Release)
+    set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
+else()
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+# output dir
+if("$ENV{MIX_APP_PATH}" STREQUAL "")
+    set(OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/_build/external)
+else()
+    set(OUTPUT_DIR $ENV{MIX_APP_PATH}/priv)
+endif()
 
 # dependencies
+if(DEFINED CPM_bacnet_SOURCE)
+    set(PATCHES "")
+else()
+    set(PATCHES
+        patches/0001-Add-Model-and-Application-Software-Version-to-routed.patch
+        patches/0002-Do-not-interpret-a-zero-d-out-device-in-a-static-lis.patch
+        patches/0003-Remove-unnecessary-debug-logs-to-stderr.patch
+        patches/0004-Add-configurable-vendor-name-support.patch
+        patches/0005-Add-routed-analog-input-object-support.patch
+        patches/0006-Add-routed-multistate-input-object-support.patch
+        patches/0007-Allow-BACNET_PROTOCOL_REVISION-to-be-set-by-user.patch)
+endif()
+
 CPMFindPackage(
     NAME bacnet
     GITHUB_REPOSITORY bacnet-stack/bacnet-stack
@@ -23,7 +49,7 @@ CPMFindPackage(
     OPTIONS
         "BACNET_PROTOCOL_REVISION 24"
         "BACNET_STACK_BUILD_APPS NO"
-    PATCHES ${PATCH_FILES})
+    PATCHES ${PATCHES})
 
 # setup erlang
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} $ENV{ERL_EI_LIBDIR})
@@ -42,7 +68,7 @@ set(SOURCES
 
 # build
 project(bacnetd)
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 add_executable(bacnetd ${SOURCES})
 set_target_properties(bacnetd PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELEASE $ENV{MIX_APP_PATH}/priv)
