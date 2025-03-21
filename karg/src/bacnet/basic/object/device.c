@@ -2478,7 +2478,12 @@ void Routing_Device_Init(uint32_t first_object_instance)
     Device_Router_Mode = true;
 
     /* Initialize with our preset strings */
-    Add_Routed_Device(first_object_instance, &My_Object_Name, Description);
+    Add_Routed_Device(
+        first_object_instance,
+        &My_Object_Name,
+        Description,
+        Model_Name,
+        Application_Software_Version);
 
     /* Now substitute our routed versions of the main object functions. */
     pDevObject = Object_Table;

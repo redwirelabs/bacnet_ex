@@ -88,10 +88,11 @@ uint16_t iCurrent_Device_Idx = 0;
  * @return The index of this instance in the Devices[] array, or UINT16_MAX if
  *         there isn't enough room to add this Device.
  */
-uint16_t Add_Routed_Device(
-    uint32_t Object_Instance,
-    const BACNET_CHARACTER_STRING *sObject_Name,
-    const char *sDescription)
+uint16_t Add_Routed_Device(uint32_t Object_Instance,
+    BACNET_CHARACTER_STRING *sObject_Name,
+    const char *sDescription,
+    const char *sModel,
+    const char *sFirmware_Version)
 {
     int i = Num_Managed_Devices;
     if (i < MAX_NUM_DEVICES) {
@@ -113,6 +114,17 @@ uint16_t Add_Routed_Device(
         } else {
             Routed_Device_Set_Description("No Descr", strlen("No Descr"));
         }
+
+        if (sModel != NULL) {
+            Routed_Device_Set_Model(sModel, strlen(sModel));
+        }
+
+        if (sFirmware_Version != NULL) {
+            Routed_Device_Set_Firmware_Version(
+                sFirmware_Version,
+                strlen(sFirmware_Version));
+        }
+
         pDev->Database_Revision = 0; /* Reset/Initialize now */
         return i;
     } else {
@@ -355,7 +367,7 @@ uint32_t Routed_Device_Index_To_Instance(unsigned index)
  * @param  object_instance - object-instance number of the object
  * @return  index for the given instance-number, or 0 if not valid.
  */
-static uint32_t Routed_Device_Instance_To_Index(uint32_t Instance_Number)
+uint32_t Routed_Device_Instance_To_Index(uint32_t Instance_Number)
 {
     int i;
 
@@ -432,6 +444,17 @@ int Routed_Device_Read_Property_Local(BACNET_READ_PROPERTY_DATA *rpdata)
             break;
         case PROP_DESCRIPTION:
             characterstring_init_ansi(&char_string, pDev->Description);
+            apdu_len =
+                encode_application_character_string(&apdu[0], &char_string);
+            break;
+        case PROP_MODEL_NAME:
+            characterstring_init_ansi(&char_string, pDev->Model);
+            apdu_len =
+                encode_application_character_string(&apdu[0], &char_string);
+            break;
+        case PROP_APPLICATION_SOFTWARE_VERSION:
+            characterstring_init_ansi(
+                &char_string, pDev->Firmware_Version);
             apdu_len =
                 encode_application_character_string(&apdu[0], &char_string);
             break;
@@ -560,6 +583,36 @@ bool Routed_Device_Set_Description(const char *name, size_t length)
     }
 
     return status;
+}
+
+bool Routed_Device_Set_Model(const char *value, size_t length)
+{
+    DEVICE_OBJECT_DATA *pDev = &Devices[iCurrent_Device_Idx];
+
+    if (length >= MAX_DEV_MOD_LEN)
+        return false;
+
+    memset(pDev->Model, 0, sizeof(pDev->Model));
+    memmove(pDev->Model, value, length);
+
+    Routed_Device_Inc_Database_Revision();
+
+    return true;
+}
+
+bool Routed_Device_Set_Firmware_Version(const char *value, size_t length)
+{
+    DEVICE_OBJECT_DATA *pDev = &Devices[iCurrent_Device_Idx];
+
+    if (length >= MAX_DEV_VER_LEN)
+        return false;
+
+    memset(pDev->Firmware_Version, 0, sizeof(pDev->Firmware_Version));
+    memmove(pDev->Firmware_Version, value, length);
+
+    Routed_Device_Inc_Database_Revision();
+
+    return true;
 }
 
 /*
