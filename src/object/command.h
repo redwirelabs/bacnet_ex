@@ -29,7 +29,9 @@ uint32_t command_create(
   DEVICE_OBJECT_DATA* device,
   uint32_t instance,
   char* name,
-  char* description);
+  char* description,
+  uint32_t value,
+  bool in_progress);
 
 bool command_update_status(COMMAND_OBJECT* object, bool successful);
 unsigned command_count(void);

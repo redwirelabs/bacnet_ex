@@ -125,15 +125,17 @@ defmodule BACNet.Gateway.Object do
     device_id   :: integer,
     object_id   :: integer,
     name        :: String.t,
-    description :: String.t
+    description :: String.t,
+    value       :: nil | non_neg_integer
   ) :: :ok | {:error, term}
-  def create_command(pid, device_id, object_id, name, description) do
+  def create_command(pid, device_id, object_id, name, description, value \\ nil) do
     GenServer.call(pid, {
       :create_routed_command,
       device_id,
       object_id,
       name,
       description,
+      value
     })
   end
 

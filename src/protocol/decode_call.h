@@ -60,6 +60,8 @@ typedef struct {
   uint32_t object_bacnet_id;
   char     name[MAXATOMLEN];
   char     description[MAXATOMLEN];
+  uint32_t value;
+  bool     in_progress;
 } create_routed_command_t;
 
 typedef struct {

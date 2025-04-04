@@ -70,7 +70,9 @@ uint32_t command_create(
   DEVICE_OBJECT_DATA* device,
   uint32_t instance,
   char* name,
-  char* description
+  char* description,
+  uint32_t value,
+  bool in_progress
 ) {
   if (instance >= BACNET_MAX_INSTANCE)
     return BACNET_MAX_INSTANCE;
@@ -89,8 +91,8 @@ uint32_t command_create(
     return BACNET_MAX_INSTANCE;
 
   object->type          = OBJECT_COMMAND;
-  object->present_value = 0;
-  object->in_progress   = false;
+  object->present_value = value;
+  object->in_progress   = in_progress;
   object->successful    = true;
 
   memset(object->name, 0, sizeof(object->name));

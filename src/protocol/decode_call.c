@@ -282,6 +282,16 @@ static int decode_set_routed_multistate_input_value(
   return is_invalid ? -1 : 0;
 }
 
+static int
+decode_command_value(char* buffer, int* index, create_routed_command_t* data) {
+  bool is_invalid =
+    ei_decode_ulong(buffer, index, (unsigned long*)&data->value);
+
+  data->in_progress = true;
+
+  return is_invalid ? -1 : 0;
+}
+
 static int decode_create_routed_command(
   char* buffer,
   int* index,
@@ -300,7 +310,9 @@ static int decode_create_routed_command(
     || ei_get_type(buffer, index, &type, (int*)&size)
     || (size >= sizeof(data->description))
     || (memset(data->description, 0, sizeof(data->description)) == NULL)
-    || ei_decode_binary(buffer, index, data->description, &size);
+    || ei_decode_binary(buffer, index, data->description, &size)
+    || ei_get_type(buffer, index, &type, (int*)&size)
+    || type == ERL_ATOM_EXT ? 0 : decode_command_value(buffer, index, data);
 
   return is_invalid ? -1 : 0;
 }

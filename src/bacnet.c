@@ -531,7 +531,9 @@ static int handle_create_routed_command(create_routed_command_t* params)
       device,
       params->object_bacnet_id,
       params->name,
-      params->description
+      params->description,
+      params->value,
+      params->in_progress
     );
 
   if (bacnet_id != params->object_bacnet_id)
