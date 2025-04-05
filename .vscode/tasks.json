@@ -1,0 +1,27 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-project",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "cd karg && cmake . && make && cd .. && cmake . && make"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "options": {
+                "env": {
+                    "ERL_EI_INCLUDE_DIR": "~/.asdf/installs/erlang/27.0.1/usr/include"
+                }
+            },
+            "detail": "Build the project by running cmake and make in specified directories."
+        }
+    ]
+}

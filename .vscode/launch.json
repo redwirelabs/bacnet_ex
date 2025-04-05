@@ -1,0 +1,56 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug: bacnetd",
+            "type": "cppdbg",
+            "request": "launch",
+            "preLaunchTask": "build-project",
+            "program": "${workspaceFolder}/priv/bacnetd",
+            "args": [
+                "1234"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                    "name": "BACNET_NETWORK_ID",
+                    "value": "5000"
+                },
+                {
+                    "name": "BACNET_IP_PORT",
+                    "value": "47818"
+                },
+                {
+                    "name": "BACNET_IFACE",
+                    "value": "wlp0s20f3"
+                },
+                {
+                    "name": "BACNET_VENDOR_ID",
+                    "value": "1532"
+                },
+                {
+                    "name": "BACNET_VENDOR_NAME",
+                    "value": "Fellowes Inc."
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb",
+            "logging": {
+                "engineLogging": false,
+                "trace": true,
+                "traceResponse": true
+            }
+        }
+    ]
+}
