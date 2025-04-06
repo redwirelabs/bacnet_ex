@@ -3,10 +3,12 @@ defmodule BACNetUDP do
 
   require Logger
 
-  @port1 8080                  # Local port used for receiving UDP messages.
-  @port2 8081                  # Remote port where the other server/client is listening.
+  # Local port used for receiving UDP messages.
+  @port1 8080
+  # Remote port where the other server/client is listening.
+  @port2 8081
   @default_remote_ip {127, 0, 0, 1}
-  @default_message "Hello from Program 1"
+  @default_message "Hello from Elixir side (test message)"
 
   ## Client API
 
@@ -21,8 +23,16 @@ defmodule BACNetUDP do
   @doc """
   Asynchronously send a UDP message using GenServer.cast.
   You can override the default remote IP, port, and message.
+
+  todo 1 - This function is not intended to be used in the module, however
+  by the moment can help to debug. When it isn't more necessary
+  can be removed safely.
   """
-  def send_message(message \\ @default_message, remote_ip \\ @default_remote_ip, remote_port \\ @port2) do
+  def send_message(
+        message \\ @default_message,
+        remote_ip \\ @default_remote_ip,
+        remote_port \\ @port2
+      ) do
     GenServer.cast(__MODULE__, {:send_message, message, remote_ip, remote_port})
   end
 
