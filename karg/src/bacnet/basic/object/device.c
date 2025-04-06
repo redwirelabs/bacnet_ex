@@ -578,7 +578,7 @@ bool Device_Objects_Property_List_Member(
 static uint32_t Object_Instance_Number = 260001;
 static BACNET_CHARACTER_STRING My_Object_Name;
 static BACNET_DEVICE_STATUS System_Status = STATUS_OPERATIONAL;
-static const char *Vendor_Name = BACNET_VENDOR_NAME;
+static char Vendor_Name[MAX_DEV_MOD_LEN + 1] = BACNET_VENDOR_NAME;
 static uint16_t Vendor_Identifier = BACNET_VENDOR_ID;
 static char Model_Name[MAX_DEV_MOD_LEN + 1] = "GNU";
 static char Application_Software_Version[MAX_DEV_VER_LEN + 1] = "1.0";
@@ -909,6 +909,18 @@ int Device_Set_System_Status(BACNET_DEVICE_STATUS status, bool local)
 const char *Device_Vendor_Name(void)
 {
     return Vendor_Name;
+}
+
+bool Device_Set_Vendor_Name(char *name)
+{
+    int length = strlen(name);
+    if (length >= sizeof(Vendor_Name))
+        return false;
+
+    memset(Vendor_Name, 0, sizeof(Vendor_Name));
+    memmove(Vendor_Name, name, length);
+
+    return true;
 }
 
 /** Returns the Vendor ID for this Device.

@@ -325,6 +325,9 @@ BACNET_STACK_EXPORT
 const char *Device_Vendor_Name(void);
 
 BACNET_STACK_EXPORT
+bool Device_Set_Vendor_Name(char *name);
+
+BACNET_STACK_EXPORT
 uint16_t Device_Vendor_Identifier(void);
 BACNET_STACK_EXPORT
 void Device_Set_Vendor_Identifier(uint16_t vendor_id);

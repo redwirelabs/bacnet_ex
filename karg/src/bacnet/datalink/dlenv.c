@@ -18,6 +18,7 @@
 #include "bacnet/basic/services.h"
 #include "bacnet/datalink/dlenv.h"
 #include "bacnet/basic/tsm/tsm.h"
+#include "bacnet/basic/object/device.h"
 #if defined(BACDL_BIP)
 #include "bacnet/datalink/bip.h"
 #include "bacnet/basic/bbmd/h_bbmd.h"
@@ -927,4 +928,14 @@ void dlenv_init(void)
     dlenv_network_port_init();
 #endif
     dlenv_register_as_foreign_device();
+
+    pEnv = getenv("BACNET_VENDOR_NAME");
+    if (pEnv) {
+        Device_Set_Vendor_Name(pEnv);
+    }
+
+    pEnv = getenv("BACNET_VENDOR_ID");
+    if (pEnv) {
+        Device_Set_Vendor_Identifier((uint16_t)strtol(pEnv, NULL, 0));
+    }
 }
