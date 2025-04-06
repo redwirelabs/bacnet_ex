@@ -64,10 +64,11 @@ defmodule BACNetUDP do
   def handle_cast({:send_message, message, remote_ip, remote_port}, state) do
     case :gen_udp.send(state.send_socket, remote_ip, remote_port, message) do
       :ok ->
-        IO.puts("Cast: sent message to #{:inet.ntoa(remote_ip)}:#{remote_port} -> #{message}")
+        Logger.debug("Cast: sent message to #{:inet.ntoa(remote_ip)}:#{remote_port} -> #{message}")
         {:noreply, state}
+
       {:error, reason} ->
-        IO.puts("Cast: failed to send message: #{inspect(reason)}")
+        Logger.debug("Cast: failed to send message: #{inspect(reason)}")
         {:noreply, state}
     end
   end
@@ -75,43 +76,45 @@ defmodule BACNetUDP do
   @impl GenServer
   def handle_call(cmd, from, state) do
     encoded_term = :erlang.term_to_binary({:"$gen_call", from, cmd})
+
     case :gen_udp.send(state.send_socket, @default_remote_ip, @port2, encoded_term) do
       :ok ->
-        IO.puts("Sync: Sent message to #{:inet.ntoa(@default_remote_ip)}:#{@port2}")
-        # You might want to wait for a reply or simply return :ok.
+        # Logger.debug("Sync: Sent message to #{:inet.ntoa(@default_remote_ip)}:#{@port2}")
         {:reply, :ok, state}
 
       {:error, reason} ->
-        IO.puts("Sync: Failed to send message: #{inspect(reason)}")
+        Logger.warning("Sync: Failed to send message: #{inspect(reason)}")
         {:reply, {:error, reason}, state}
     end
   end
 
   @impl GenServer
   def handle_info(message, state) do
-    IO.puts("Received unhandled message: #{inspect(message)}")
+    Logger.warning("Received unhandled message: #{inspect(message)}")
 
     try do
       message
-      |> :erlang.binary_to_term
+      |> :erlang.binary_to_term()
       |> process_message
-      |> IO.inspect(label: "Received unhandled message (processed)")
     catch
       _ -> nil
     end
+
     {:noreply, state}
   end
 
   defp receive_loop(socket) do
-    case :gen_udp.recv(socket, 1000, 5000) do
-      {:ok, {ip, port, data}} ->
-        IO.puts("Received from #{:inet.ntoa(ip)}:#{port} -> #{data}")
-        # ivan - Enable this trick when testing with the C socket server
-        # if data is processed.
-        # data = :erlang.term_to_binary(data)
+    # ivan - for testing, in infinity
+    case :gen_udp.recv(socket, 1500, :infinity) do
+      {:ok, {_ip, _port, data}} ->
+        # todo 0 - Remove when it isn't necessary to debug it anymore.
+        # data
+        # |> :erlang.binary_to_term()
+        # |> IO.inspect(label: "term")
+
         try do
           data
-          |> :erlang.binary_to_term
+          |> :erlang.binary_to_term()
           |> process_message
         catch
           _ -> nil
@@ -123,7 +126,7 @@ defmodule BACNetUDP do
         receive_loop(socket)
 
       {:error, reason} ->
-        IO.puts("Error receiving UDP data: #{inspect(reason)}")
+        Logger.error("Error receiving UDP data: #{inspect(reason)}")
         receive_loop(socket)
     end
   end
