@@ -47,20 +47,15 @@ defmodule BACNetUDP do
         # Open a UDP socket for sending messages (using port 0 lets the OS choose an ephemeral port).
         case :gen_udp.open(0, [:binary]) do
           {:ok, send_socket} ->
-            # Send an initial message.
-            :ok = :gen_udp.send(send_socket, @default_remote_ip, @port2, @default_message)
-            IO.puts("Sent initial message to the other server: #{@default_message}")
-
-            # Save both sockets in the state.
             {:ok, %{recv_socket: recv_socket, send_socket: send_socket}}
 
           {:error, reason} ->
-            IO.puts("Failed to open sending socket: #{inspect(reason)}")
+            Logger.error("Failed to open sending socket: #{inspect(reason)}")
             {:stop, reason}
         end
 
       {:error, reason} ->
-        IO.puts("Failed to open receiving socket on port #{@port1}: #{inspect(reason)}")
+        Logger.error("Failed to open receiving socket on port #{@port1}: #{inspect(reason)}")
         {:stop, reason}
     end
   end
