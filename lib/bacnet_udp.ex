@@ -36,6 +36,11 @@ defmodule BACNetUDP do
     GenServer.cast(__MODULE__, {:send_message, message, remote_ip, remote_port})
   end
 
+  @doc """
+  Helper function to kill the current GenServer.
+  """
+  def kill(), do: GenServer.cast(__MODULE__, {:exit, :shutdown})
+
   @impl GenServer
   def init(_opts) do
     # Open a UDP socket for receiving messages on @port1.
@@ -74,6 +79,12 @@ defmodule BACNetUDP do
   end
 
   @impl GenServer
+  def handle_cast({:exit, reason}, _state) do
+    Logger.info("Exit received with reason #{reason}")
+    exit(reason)
+  end
+
+  @impl GenServer
   def handle_call(cmd, from, state) do
     encoded_term = :erlang.term_to_binary({:"$gen_call", from, cmd})
 
@@ -103,6 +114,11 @@ defmodule BACNetUDP do
     {:noreply, state}
   end
 
+  @impl GenServer
+  def terminate(reason, _state) do
+    Logger.info("#{__MODULE__} has been shutdown #{inspect {:reason, reason}}")
+  end
+
   defp receive_loop(socket) do
     # ivan - for testing, in infinity
     case :gen_udp.recv(socket, 1500, :infinity) do
@@ -124,6 +140,9 @@ defmodule BACNetUDP do
 
       {:error, :timeout} ->
         receive_loop(socket)
+
+      {:error, :closed} ->
+        nil
 
       {:error, reason} ->
         Logger.error("Error receiving UDP data: #{inspect(reason)}")
