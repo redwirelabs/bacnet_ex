@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.20.0 FATAL_ERROR)
 set(bacnet-stack_DIR "karg/")
 find_package(bacnet-stack REQUIRED)
 link_directories(${bacnet-stack_DIR})
+include_directories(karg/src)
 
 # setup erlang
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} $ENV{ERL_EI_LIBDIR})
@@ -17,8 +18,7 @@ set(SOURCES
     src/main.c
     src/port.c
     src/protocol/decode_call.c
-    src/protocol/enum.c
-    src/bacnet/bactext.c)
+    src/protocol/enum.c)
 
 # If not built by Mix, it is necessary to set the variable to
 # the current directory
