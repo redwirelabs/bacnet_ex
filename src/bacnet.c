@@ -25,6 +25,7 @@ static pthread_t thread_id;
 pthread_mutex_t exit_signal_lock = PTHREAD_MUTEX_INITIALIZER;
 static bool should_exit = false;
 static int bacnet_network_id = 1000;
+extern int gateway_instance;
 
 static int init_service_handlers();
 static void* event_loop(void* arg);
@@ -67,6 +68,9 @@ int bacnet_start_services()
   const char* network_id_raw = getenv("BACNET_NETWORK_ID");
   if (network_id_raw)
     bacnet_network_id = (int)strtol(network_id_raw, NULL, 0);
+
+  if (gateway_instance)
+    Device_Set_Object_Instance_Number(gateway_instance);
 
   should_exit = false;
   if (pthread_create(&thread_id, NULL, &event_loop, NULL) != 0) {
