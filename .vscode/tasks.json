@@ -22,6 +22,28 @@
                 }
             },
             "detail": "Build the project by running cmake and make in specified directories."
+        },
+        {
+            "label": "clean-project",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "rm karg/Makefile && rm Makefile"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "options": {
+                "env": {
+                    "ERL_EI_INCLUDE_DIR": "~/.asdf/installs/erlang/27.0.1/usr/include"
+                }
+            },
+            "detail": "Build the project by running cmake and make in specified directories."
         }
     ]
 }

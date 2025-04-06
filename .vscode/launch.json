@@ -9,6 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "preLaunchTask": "build-project",
+            "postDebugTask": "clean-project",
             "program": "${workspaceFolder}/priv/bacnetd",
             "args": [
                 "1234"
