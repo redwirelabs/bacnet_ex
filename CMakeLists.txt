@@ -37,6 +37,6 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_C_FLAGS_DEBUG "-g")
 add_executable(bacnetd ${SOURCES})
 set_target_properties(bacnetd PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${MIX_APP_PATH}/priv)
+    RUNTIME_OUTPUT_DIRECTORY ${MIX_APP_PATH}/priv)
 # target_link_libraries(bacnetd PRIVATE ${ERLANG_EI_LIB})
 target_link_libraries(bacnetd PRIVATE :libbacnet-stack.a ${ERLANG_EI_LIB})
