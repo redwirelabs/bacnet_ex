@@ -91,7 +91,7 @@ defmodule BACNetUDP do
     case :gen_udp.send(state.send_socket, @default_remote_ip, @port2, encoded_term) do
       :ok ->
         # Logger.debug("Sync: Sent message to #{:inet.ntoa(@default_remote_ip)}:#{@port2}")
-        {:reply, :ok, state}
+        {:noreply, state}
 
       {:error, reason} ->
         Logger.warning("Sync: Failed to send message: #{inspect(reason)}")
