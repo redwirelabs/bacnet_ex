@@ -51,8 +51,5 @@ cpm-package-lock.cmake
 bin/
 bacgateway
 bacserv
-karg/bacnet-stackConfig.cmake
-karg/bacnet-stackConfigVersion.cmake
-karg/bacnet-stackTargets.cmake
 karg/Makefile
 build/.cmake
