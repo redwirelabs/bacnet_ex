@@ -29,15 +29,16 @@ defmodule Helper do
       vdev.model,
       vdev.version)
 
-    object = %{
-        name: "Air Quality",
-        type: :analog_input,
-        description: "RESET Air Index quality rating",
-        units: :percent
-      }
+    # ivan2ed - It is here as a reference.
+    # object = %{
+    #     name: "Air Quality",
+    #     type: :analog_input,
+    #     description: "RESET Air Index quality rating",
+    #     units: :percent
+    #   }
 
     :ok =
-      BACNet.Gateway.Object.create_analog_input(
+      create_analog_input_object(
         pid,
         vdev.id,
         1,
@@ -46,11 +47,22 @@ defmodule Helper do
       )
   end
 
-  def set_analog_input_object(pid, vdev_id, value) do
+  def create_analog_input_object(pid, vdev_id, value) do
+    :ok =
+      BACNet.Gateway.Object.create_analog_input(
+        pid,
+        vdev_id,
+        value,
+        object.name,
+        object.units
+      )
+  end
+
+  def set_analog_input_object(pid, vdev_id, object_id \\ 1, value \\ 33.3) do
     BACNet.Gateway.Object.set_analog_input_present_value(
       pid,
       vdev_id,
-      1,
+      object_id,
       value
     )
   end
