@@ -19,7 +19,7 @@
             "environment": [
                 {
                     "name": "BACNET_NETWORK_ID",
-                    "value": "2"
+                    "value": "1000"
                 },
                 {
                     "name": "BACNET_IP_PORT",

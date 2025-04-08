@@ -6,14 +6,14 @@ defmodule Helper do
 
   def kill, do: BACNetUDP.kill()
 
-  def create_gateway(pid) do
-    BACNet.Gateway.create(pid, 260001, "Relay", "Gateway", "Array Relay", "v1.0.0")
+  def create_gateway(pid, device_instance \\ 1000) do
+    BACNet.Gateway.create(pid, device_instance, "Relay", "Gateway", "Array Relay", "v1.0.0")
   end
 
-  def create_vdev(pid) do
+  def create_vdev(pid, vdev_instance \\ 1002) do
     vdev =
       %{
-        id: 1002,
+        id: vdev_instance,
         name: "AP1",
         description: "Air Purifier Ceiling Hung",
         model: "Array AC2",
