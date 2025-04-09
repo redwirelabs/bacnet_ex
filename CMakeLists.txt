@@ -39,7 +39,8 @@ else()
         patches/0004-Add-configurable-vendor-name-support.patch
         patches/0005-Add-routed-analog-input-object-support.patch
         patches/0006-Add-routed-multistate-input-object-support.patch
-        patches/0007-Allow-BACNET_PROTOCOL_REVISION-to-be-set-by-user.patch)
+        patches/0007-Allow-BACNET_PROTOCOL_REVISION-to-be-set-by-user.patch
+        patches/0008-Exclude-object-identifier-from-the-common-prop-list.patch)
 endif()
 
 CPMFindPackage(

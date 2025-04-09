@@ -1,0 +1,41 @@
+From 2cf6d05fed85e334189063fbf0c59fb3cd972616 Mon Sep 17 00:00:00 2001
+From: abelino <abelino.romo@gmail.com>
+Date: Tue, 8 Apr 2025 21:08:36 -0700
+Subject: [PATCH] Exclude object-identifier from the common prop-list when
+ routing is enabled
+
+---
+ src/bacnet/basic/service/h_whois.c | 2 +-
+ src/bacnet/proplist.c              | 2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/bacnet/basic/service/h_whois.c b/src/bacnet/basic/service/h_whois.c
+index 27656697..f2c99d02 100644
+--- a/src/bacnet/basic/service/h_whois.c
++++ b/src/bacnet/basic/service/h_whois.c
+@@ -125,7 +125,7 @@ static void check_who_is_for_routing(
+     bcast_net.net = BACNET_BROADCAST_NETWORK; /* That's all we have to set */
+ 
+     while (Routed_Device_GetNext(&bcast_net, my_list, &cursor)) {
+-        dev_instance = Device_Object_Instance_Number();
++        dev_instance = Routed_Device_Index_To_Instance(cursor);
+         if (dev_instance == 0) continue;
+ 
+         /* If len == 0, no limits and always respond */
+diff --git a/src/bacnet/proplist.c b/src/bacnet/proplist.c
+index ed6524ab..2461c589 100644
+--- a/src/bacnet/proplist.c
++++ b/src/bacnet/proplist.c
+@@ -324,7 +324,9 @@ bool property_list_common(BACNET_PROPERTY_ID property)
+     bool status = false;
+ 
+     switch (property) {
++#ifndef BAC_ROUTING
+         case PROP_OBJECT_IDENTIFIER:
++#endif
+         case PROP_OBJECT_TYPE:
+             status = true;
+             break;
+-- 
+2.48.1
+
