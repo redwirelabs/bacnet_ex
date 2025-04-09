@@ -1,7 +1,7 @@
-From 0c006a94ea396c6ad0e1f3426ed19eb85df1f199 Mon Sep 17 00:00:00 2001
+From 681e78335437ab932755dd0e9617ee5c9bce0280 Mon Sep 17 00:00:00 2001
 From: abelino <abelino.romo@gmail.com>
 Date: Thu, 12 Sep 2024 12:38:10 -0700
-Subject: [PATCH] Do not interpret a zero'd out device in a static list as
+Subject: [PATCH 2/8] Do not interpret a zero'd out device in a static list as
  valid
 
 ---
@@ -9,10 +9,10 @@ Subject: [PATCH] Do not interpret a zero'd out device in a static list as
  1 file changed, 2 insertions(+)
 
 diff --git a/src/bacnet/basic/service/h_whois.c b/src/bacnet/basic/service/h_whois.c
-index 83d0237b..221ed21b 100644
+index 77057065..27656697 100644
 --- a/src/bacnet/basic/service/h_whois.c
 +++ b/src/bacnet/basic/service/h_whois.c
-@@ -125,6 +125,8 @@ static void check_who_is_for_routing(uint8_t *service_request,
+@@ -126,6 +126,8 @@ static void check_who_is_for_routing(
  
      while (Routed_Device_GetNext(&bcast_net, my_list, &cursor)) {
          dev_instance = Device_Object_Instance_Number();
@@ -22,5 +22,5 @@ index 83d0237b..221ed21b 100644
          if ((len == 0) ||
              ((dev_instance >= low_limit) && (dev_instance <= high_limit))) {
 -- 
-2.46.2
+2.48.1
 

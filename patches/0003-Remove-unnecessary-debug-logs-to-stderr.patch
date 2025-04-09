@@ -1,27 +1,27 @@
-From d06ea6550e2e348e1ac714d2fef9e42181ac0d46 Mon Sep 17 00:00:00 2001
+From c9c339dfab6d38e9bab540e43f05b1b639a8acc5 Mon Sep 17 00:00:00 2001
 From: abelino <abelino.romo@gmail.com>
 Date: Wed, 18 Sep 2024 19:53:12 -0700
-Subject: [PATCH] Remove unnecessary debug logs to stderr
+Subject: [PATCH 3/8] Remove unnecessary debug logs to stderr
 
 ---
  CMakeLists.txt | 5 +++--
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index f3fa628e..42234979 100644
+index 5bce3b2a..8eeb4def 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -601,8 +601,7 @@ target_compile_definitions(
-   $<$<BOOL:${BACNET_PROPERTY_ARRAY_LISTS}>:BACNET_PROPERTY_ARRAY_LISTS=1>
+@@ -670,8 +670,7 @@ target_compile_definitions(
+   $<$<BOOL:${BACNET_PROPERTY_LISTS}>:BACNET_PROPERTY_LISTS=1>
    $<$<BOOL:${BAC_ROUTING}>:BAC_ROUTING>
    $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:BACNET_STACK_STATIC_DEFINE>
 -  PRIVATE
 -  PRINT_ENABLED=1)
 +  PRIVATE)
- target_link_libraries(${PROJECT_NAME} PUBLIC Threads::Threads)
  
- add_library(
-@@ -610,6 +609,8 @@ add_library(
+ if(BACDL_BSC)
+   target_link_libraries(${PROJECT_NAME} PUBLIC Threads::Threads ${LIB_WEBSOCKETS_LIBRARIES} )
+@@ -684,6 +683,8 @@ add_library(
    ALIAS
    ${PROJECT_NAME})
  
@@ -31,5 +31,5 @@ index f3fa628e..42234979 100644
  # add ports
  #
 -- 
-2.46.2
+2.48.1
 

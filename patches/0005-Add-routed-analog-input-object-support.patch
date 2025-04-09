@@ -1,23 +1,23 @@
-From 486862bb23ca7215de896b611acf098ef2f48478 Mon Sep 17 00:00:00 2001
+From f036cfec9ba94b10b317b37241f64231d8ba29e0 Mon Sep 17 00:00:00 2001
 From: abelino <abelino.romo@gmail.com>
-Date: Fri, 4 Oct 2024 23:02:33 -0700
-Subject: [PATCH] Add routed analog-input object support
+Date: Fri, 21 Mar 2025 16:57:54 -0700
+Subject: [PATCH 5/8] Add routed analog-input object support
 
 ---
  CMakeLists.txt                                |   2 +
- src/bacnet/basic/object/device.h              |   7 +
+ src/bacnet/basic/object/device.h              |   5 +
  src/bacnet/basic/object/gateway/gw_device.c   |   2 +-
  src/bacnet/basic/object/routed_analog_input.c | 386 ++++++++++++++++++
  src/bacnet/basic/object/routed_analog_input.h |  95 +++++
- 5 files changed, 491 insertions(+), 1 deletion(-)
+ 5 files changed, 489 insertions(+), 1 deletion(-)
  create mode 100644 src/bacnet/basic/object/routed_analog_input.c
  create mode 100644 src/bacnet/basic/object/routed_analog_input.h
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 42234979..7dc54feb 100644
+index 8eeb4def..08243de4 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -323,6 +323,8 @@ add_library(${PROJECT_NAME}
+@@ -384,6 +384,8 @@ add_library(${PROJECT_NAME}
    src/bacnet/basic/object/osv.h
    src/bacnet/basic/object/piv.c
    src/bacnet/basic/object/piv.h
@@ -27,7 +27,7 @@ index 42234979..7dc54feb 100644
    src/bacnet/basic/object/schedule.h
    src/bacnet/basic/object/structured_view.c
 diff --git a/src/bacnet/basic/object/device.h b/src/bacnet/basic/object/device.h
-index 8bfd235c..ce2fd575 100644
+index cd58435e..f435016f 100644
 --- a/src/bacnet/basic/object/device.h
 +++ b/src/bacnet/basic/object/device.h
 @@ -21,6 +21,7 @@
@@ -38,31 +38,29 @@ index 8bfd235c..ce2fd575 100644
  
  /** Called so a BACnet object can perform any necessary initialization.
   * @ingroup ObjHelpers
-@@ -212,6 +213,8 @@ typedef struct devObj_s {
+@@ -190,6 +191,8 @@ typedef struct devObj_s {
  
      char Firmware_Version[MAX_DEV_VER_LEN];
  
 +    OS_Keylist objects;
 +
-     /** The upcounter that shows if the Device ID or object structure has changed. */
+     /** The upcounter that shows if the Device ID or object structure has
+      * changed. */
      uint32_t Database_Revision;
- } DEVICE_OBJECT_DATA;
-@@ -534,6 +537,10 @@ extern "C" {
-     BACNET_STACK_EXPORT
-     uint32_t Routed_Device_Index_To_Instance(
-         unsigned index);
-+
-+    BACNET_STACK_EXPORT
-+    uint32_t Routed_Device_Instance_To_Index(uint32_t Instance_Number);
-+
-     BACNET_STACK_EXPORT
-     bool Routed_Device_Valid_Object_Instance_Number(
-         uint32_t object_id);
+@@ -441,6 +444,8 @@ bool Routed_Device_Is_Valid_Network(uint16_t dest_net, const int *DNET_list);
+ BACNET_STACK_EXPORT
+ uint32_t Routed_Device_Index_To_Instance(unsigned index);
+ BACNET_STACK_EXPORT
++uint32_t Routed_Device_Instance_To_Index(uint32_t Instance_Number);
++BACNET_STACK_EXPORT
+ bool Routed_Device_Valid_Object_Instance_Number(uint32_t object_id);
+ BACNET_STACK_EXPORT
+ bool Routed_Device_Name(
 diff --git a/src/bacnet/basic/object/gateway/gw_device.c b/src/bacnet/basic/object/gateway/gw_device.c
-index 4fb729db..fefc8295 100644
+index 8b1ab904..bcdc6094 100644
 --- a/src/bacnet/basic/object/gateway/gw_device.c
 +++ b/src/bacnet/basic/object/gateway/gw_device.c
-@@ -364,7 +364,7 @@ uint32_t Routed_Device_Index_To_Instance(unsigned index)
+@@ -368,7 +368,7 @@ uint32_t Routed_Device_Index_To_Instance(unsigned index)
   * @param  object_instance - object-instance number of the object
   * @return  index for the given instance-number, or 0 if not valid.
   */
@@ -565,5 +563,5 @@ index 00000000..9cca4462
 +
 +#endif /* BACNET_BASIC_ROUTED_OBJECT_ANALOG_INPUT_H */
 -- 
-2.46.2
+2.48.1
 

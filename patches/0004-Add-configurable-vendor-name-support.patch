@@ -1,7 +1,7 @@
-From f980f7bd4b104b5761989d11b89e5dbb10b5aced Mon Sep 17 00:00:00 2001
+From 735b7f1c34156f68140ec9cceb8702ec7bc1bfce Mon Sep 17 00:00:00 2001
 From: abelino <abelino.romo@gmail.com>
 Date: Tue, 1 Oct 2024 09:28:57 -0700
-Subject: [PATCH] Add configurable vendor-name support
+Subject: [PATCH 4/8] Add configurable vendor-name support
 
 ---
  src/bacnet/basic/object/device.c | 14 +++++++++++++-
@@ -10,19 +10,19 @@ Subject: [PATCH] Add configurable vendor-name support
  3 files changed, 27 insertions(+), 1 deletion(-)
 
 diff --git a/src/bacnet/basic/object/device.c b/src/bacnet/basic/object/device.c
-index 2eba72ca..963cc532 100644
+index cd986039..4c8b1631 100644
 --- a/src/bacnet/basic/object/device.c
 +++ b/src/bacnet/basic/object/device.c
-@@ -574,7 +574,7 @@ bool Device_Objects_Property_List_Member(
+@@ -577,7 +577,7 @@ bool Device_Objects_Property_List_Member(
  static uint32_t Object_Instance_Number = 260001;
  static BACNET_CHARACTER_STRING My_Object_Name;
  static BACNET_DEVICE_STATUS System_Status = STATUS_OPERATIONAL;
--static char *Vendor_Name = BACNET_VENDOR_NAME;
+-static const char *Vendor_Name = BACNET_VENDOR_NAME;
 +static char Vendor_Name[MAX_DEV_MOD_LEN + 1] = BACNET_VENDOR_NAME;
  static uint16_t Vendor_Identifier = BACNET_VENDOR_ID;
  static char Model_Name[MAX_DEV_MOD_LEN + 1] = "GNU";
  static char Application_Software_Version[MAX_DEV_VER_LEN + 1] = "1.0";
-@@ -874,6 +874,18 @@ const char *Device_Vendor_Name(void)
+@@ -903,6 +903,18 @@ const char *Device_Vendor_Name(void)
      return Vendor_Name;
  }
  
@@ -42,21 +42,21 @@ index 2eba72ca..963cc532 100644
   * See the assignments at
   * http://www.bacnet.org/VendorID/BACnet%20Vendor%20IDs.htm
 diff --git a/src/bacnet/basic/object/device.h b/src/bacnet/basic/object/device.h
-index 2e5c6c86..8bfd235c 100644
+index 1fabb103..cd58435e 100644
 --- a/src/bacnet/basic/object/device.h
 +++ b/src/bacnet/basic/object/device.h
-@@ -381,6 +381,9 @@ extern "C" {
-     const char *Device_Vendor_Name(
-         void);
+@@ -322,6 +322,9 @@ int Device_Set_System_Status(BACNET_DEVICE_STATUS status, bool local);
+ BACNET_STACK_EXPORT
+ const char *Device_Vendor_Name(void);
  
-+    BACNET_STACK_EXPORT
-+    bool Device_Set_Vendor_Name(char *name);
++BACNET_STACK_EXPORT
++bool Device_Set_Vendor_Name(char *name);
 +
-     BACNET_STACK_EXPORT
-     uint16_t Device_Vendor_Identifier(
-         void);
+ BACNET_STACK_EXPORT
+ uint16_t Device_Vendor_Identifier(void);
+ BACNET_STACK_EXPORT
 diff --git a/src/bacnet/datalink/dlenv.c b/src/bacnet/datalink/dlenv.c
-index b699708c..1e4c0cd6 100644
+index df3116d0..52f55f0c 100644
 --- a/src/bacnet/datalink/dlenv.c
 +++ b/src/bacnet/datalink/dlenv.c
 @@ -18,6 +18,7 @@
@@ -67,7 +67,7 @@ index b699708c..1e4c0cd6 100644
  #if defined(BACDL_BIP)
  #include "bacnet/datalink/bip.h"
  #include "bacnet/basic/bbmd/h_bbmd.h"
-@@ -669,4 +670,14 @@ void dlenv_init(void)
+@@ -920,4 +921,14 @@ void dlenv_init(void)
  #endif
      dlenv_network_port_init();
      dlenv_register_as_foreign_device();
@@ -83,5 +83,5 @@ index b699708c..1e4c0cd6 100644
 +    }
  }
 -- 
-2.46.2
+2.48.1
 

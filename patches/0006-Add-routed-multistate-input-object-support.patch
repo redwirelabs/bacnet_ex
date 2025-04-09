@@ -1,7 +1,7 @@
-From 3a929aad3ddf8f221186ff3472ebc509eb54651f Mon Sep 17 00:00:00 2001
+From 24d4ba14a82a075045f9f408e0c9085d65e5fef9 Mon Sep 17 00:00:00 2001
 From: abelino <abelino.romo@gmail.com>
 Date: Tue, 24 Sep 2024 19:39:09 -0700
-Subject: [PATCH] Add routed multistate-input object support
+Subject: [PATCH 6/8] Add routed multistate-input object support
 
 ---
  CMakeLists.txt                                |   4 +
@@ -19,10 +19,10 @@ Subject: [PATCH] Add routed multistate-input object support
  create mode 100644 src/bacnet/basic/object/routed_object.h
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 7dc54feb..27b7df3c 100644
+index 08243de4..86b929aa 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -325,6 +325,10 @@ add_library(${PROJECT_NAME}
+@@ -386,6 +386,10 @@ add_library(${PROJECT_NAME}
    src/bacnet/basic/object/piv.h
    src/bacnet/basic/object/routed_analog_input.c
    src/bacnet/basic/object/routed_analog_input.h
@@ -34,7 +34,7 @@ index 7dc54feb..27b7df3c 100644
    src/bacnet/basic/object/schedule.h
    src/bacnet/basic/object/structured_view.c
 diff --git a/src/bacnet/bacenum.h b/src/bacnet/bacenum.h
-index c25dbb6e..4412c1e8 100644
+index 0332cbcc..9952b5cf 100644
 --- a/src/bacnet/bacenum.h
 +++ b/src/bacnet/bacenum.h
 @@ -1499,7 +1499,7 @@ typedef enum BACnetObjectType {
@@ -826,5 +826,5 @@ index 00000000..4bd86cf9
 +
 +#endif /* BACNET_BASIC_ROUTED_OBJECT_H */
 -- 
-2.46.2
+2.48.1
 

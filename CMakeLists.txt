@@ -46,7 +46,7 @@ endif()
 CPMFindPackage(
     NAME bacnet
     GITHUB_REPOSITORY bacnet-stack/bacnet-stack
-    GIT_TAG bacnet-stack-1.3.8
+    GIT_TAG bacnet-stack-1.4.0
     OPTIONS
         "BACNET_PROTOCOL_REVISION 24"
         "BACNET_STACK_BUILD_APPS NO"
