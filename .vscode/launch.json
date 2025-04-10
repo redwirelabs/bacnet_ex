@@ -12,14 +12,14 @@
             "postDebugTask": "clean-project",
             "program": "${workspaceFolder}/priv/bacnetd",
             "args": [
-                "1000"
+                "260001"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [
                 {
                     "name": "BACNET_NETWORK_ID",
-                    "value": "5000"
+                    "value": "2"
                 },
                 {
                     "name": "BACNET_IP_PORT",
