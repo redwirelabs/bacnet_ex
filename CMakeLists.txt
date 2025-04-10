@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.20.0 FATAL_ERROR)
 
-set(bacnet-stack_DIR "karg/")
+# setup bacnet-stack location
+set(bacnet-stack_DIR "../bacnet-stack")
 find_package(bacnet-stack REQUIRED)
 link_directories(${bacnet-stack_DIR})
-include_directories(karg/src)
+include_directories(../bacnet-stack/src)
 
 # setup erlang
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} $ENV{ERL_EI_LIBDIR})

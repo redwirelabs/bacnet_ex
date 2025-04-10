@@ -7,7 +7,7 @@
             "command": "bash",
             "args": [
                 "-c",
-                "cd karg && cmake -DBACNET_PROTOCOL_REVISION=24 -DBACNET_STACK_BUILD_APPS=no -DCMAKE_BUILD_TYPE=RelWithDebInfo . && make && cd .. && cmake . && make"
+                "cd ../bacnet-stack && cp Makefile Makefile.bak && cmake -DBACNET_PROTOCOL_REVISION=24 -DBACNET_STACK_BUILD_APPS=no -DCMAKE_BUILD_TYPE=RelWithDebInfo . && make && cd .. && cd bacnet_ex && cmake . && make"
                 // "cd karg && cmake . && make && cd .. && cmake . && make"
             ],
             "group": {
@@ -31,7 +31,7 @@
             "command": "bash",
             "args": [
                 "-c",
-                "rm karg/Makefile && rm Makefile"
+                "cp ../bacnet-stack/Makefile.bak ../bacnet-stack/Makefile"
             ],
             "group": {
                 "kind": "build",
