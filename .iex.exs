@@ -6,14 +6,14 @@ defmodule Helper do
 
   def kill, do: BACNetUDP.kill()
 
-  def create_gateway(pid) do
-    BACNet.Gateway.create(pid, 260001, "Relay", "Gateway", "Array Relay", "v1.0.0")
+  def create_gateway(pid, gateway_instance \\ 260001) do
+    BACNet.Gateway.create(pid, gateway_instance, "Relay", "Gateway", "Array Relay", "v1.0.0")
   end
 
-  def create_vdev(pid) do
+  def create_vdev(pid, vdev_instance \\ 1001) do
     vdev =
       %{
-        id: 1002,
+        id: vdev_instance,
         name: "AP1",
         description: "Air Purifier Ceiling Hung",
         model: "Array AC2",
@@ -46,11 +46,11 @@ defmodule Helper do
       )
   end
 
-  def set_analog_input_object(pid, vdev_id, value) do
+  def set_analog_input_object(pid, vdev_id, object_id, value) do
     BACNet.Gateway.Object.set_analog_input_present_value(
       pid,
       vdev_id,
-      1,
+      object_id,
       value
     )
   end
