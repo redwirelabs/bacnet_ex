@@ -11,6 +11,36 @@ defmodule BACNetUDP.Helper do
   """
 
   @doc """
+  Initialize a Gateway device with a virtual device attached to its
+  network.
+
+  Use it as:
+
+  ```
+  pid = initialize_gateway_with_a_vdev()
+  ```
+
+  Or providing the `gateway_instance` and `vdev_instance` identifiers as
+  parameters.
+
+  It is important to store the `pid` to then, for example, create more
+  virtual devices.
+
+  This function performs the next steps:
+
+    1. Start `BACNetUDP` GenServer.
+    2. Create a Gateway device.
+    3. Create a virtual device with an analog-input object.
+  """
+  @spec initialize_gateway_with_a_vdev(integer(), integer()) :: pid()
+  def initialize_gateway_with_a_vdev(gateway_instance \\ 260001, vdev_instance \\ 1001) do
+    {:ok, pid} = BACNetUDP.start_link([])
+    :ok = create_gateway(pid, gateway_instance)
+    :ok = create_vdev(pid, vdev_instance)
+    pid
+  end
+
+  @doc """
   Start BACNetUDP GenServer.
 
   It returns the `pid` of the GenServer. Store it in a variable
@@ -84,7 +114,7 @@ defmodule BACNetUDP.Helper do
       BACNet.Gateway.Object.create_analog_input(
         pid,
         vdev.id,
-        1,
+        :rand.uniform(100),
         object.name,
         object.units
       )
