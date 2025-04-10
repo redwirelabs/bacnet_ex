@@ -51,5 +51,10 @@ cpm-package-lock.cmake
 bin/
 bacgateway
 bacserv
-karg/Makefile
 build/.cmake
+
+# BITS - Exclude temporarily
+karg/*
+karg.1.4.bak/*
+karg-fellowes-manually-patched/*
+priv/bacnetd
