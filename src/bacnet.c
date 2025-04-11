@@ -263,8 +263,8 @@ static object_functions_t SUPPORTED_OBJECT_TABLE[] = {
     .Object_Intrinsic_Reporting = NULL,
     .Object_Add_List_Element = NULL,
     .Object_Remove_List_Element = NULL,
-    .Object_Create = Routed_Analog_Input_Create,
-    .Object_Delete = Routed_Analog_Input_Delete,
+    .Object_Create = NULL,
+    .Object_Delete = NULL,
     .Object_Timer = NULL,
   },
   {
@@ -285,8 +285,8 @@ static object_functions_t SUPPORTED_OBJECT_TABLE[] = {
     .Object_Intrinsic_Reporting = NULL,
     .Object_Add_List_Element = NULL,
     .Object_Remove_List_Element = NULL,
-    .Object_Create = Routed_Multistate_Input_Create,
-    .Object_Delete = Routed_Multistate_Input_Delete,
+    .Object_Create = NULL,
+    .Object_Delete = NULL,
     .Object_Timer = NULL,
   },
   {
