@@ -12,6 +12,7 @@
 #include "bacnet.h"
 #include "log.h"
 #include "protocol/decode_call.h"
+#include "object/binary_input.h"
 #include "object/characterstring_value.h"
 #include "object/command.h"
 
@@ -52,7 +53,9 @@ static int handle_set_routed_command_status(set_routed_command_status_t* params)
 
 static int
 handle_create_characterstring_value(create_characterstring_value_t* params);
-handle_create_characterstring_value(create_characterstring_value_t *params);
+
+static int handle_create_binary_input(create_binary_input_t* params);
+static int handle_set_binary_input_value(set_binary_input_value_t* params);
 
 static call_handler_t CALL_HANDLERS_BY_TYPE[] = {
   (call_handler_t)handle_create_gateway,
@@ -64,6 +67,8 @@ static call_handler_t CALL_HANDLERS_BY_TYPE[] = {
   (call_handler_t)handle_create_routed_command,
   (call_handler_t)handle_set_routed_command_status,
   (call_handler_t)handle_create_characterstring_value,
+  (call_handler_t)handle_create_binary_input,
+  (call_handler_t)handle_set_binary_input_value,
 };
 
 /**
@@ -316,6 +321,28 @@ static object_functions_t SUPPORTED_OBJECT_TABLE[] = {
     .Object_Read_Property = characterstring_value_read_property,
     .Object_Write_Property = NULL,
     .Object_RPM_List = command_property_lists,
+    .Object_RR_Info = NULL,
+    .Object_Iterator = NULL,
+    .Object_Value_List = NULL,
+    .Object_COV = NULL,
+    .Object_COV_Clear = NULL,
+    .Object_Intrinsic_Reporting = NULL,
+    .Object_Add_List_Element = NULL,
+    .Object_Remove_List_Element = NULL,
+    .Object_Create = NULL,
+    .Object_Delete = NULL,
+    .Object_Timer = NULL,
+  },
+  {
+    .Object_Type = OBJECT_BINARY_INPUT,
+    .Object_Init = binary_input_init,
+    .Object_Count = binary_input_count,
+    .Object_Index_To_Instance = binary_input_index_to_instance,
+    .Object_Valid_Instance = binary_input_valid_instance,
+    .Object_Name = binary_input_name,
+    .Object_Read_Property = binary_input_read_property,
+    .Object_Write_Property = NULL,
+    .Object_RPM_List = binary_input_property_lists,
     .Object_RR_Info = NULL,
     .Object_Iterator = NULL,
     .Object_Value_List = NULL,
@@ -608,6 +635,50 @@ handle_create_characterstring_value(create_characterstring_value_t* params)
 
   if (bacnet_id != params->object_bacnet_id)
     return -1;
+
+  Get_Routed_Device_Object(0);
+
+  return 0;
+}
+
+static int handle_create_binary_input(create_binary_input_t* params)
+{
+  uint32_t device_index =
+    Routed_Device_Instance_To_Index(params->device_bacnet_id);
+
+  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(device_index);
+
+  uint32_t bacnet_id =
+    binary_input_create(
+      device,
+      params->object_bacnet_id,
+      params->name,
+      params->description,
+      params->value,
+      params->polarity,
+      params->active_text,
+      params->inactive_text
+    );
+
+  if (bacnet_id != params->object_bacnet_id)
+    return -1;
+
+  Get_Routed_Device_Object(0);
+
+  return 0;
+}
+
+static int handle_set_binary_input_value(set_binary_input_value_t* params)
+{
+  uint32_t device_index =
+    Routed_Device_Instance_To_Index(params->device_bacnet_id);
+
+  DEVICE_OBJECT_DATA*  device = Get_Routed_Device_Object(device_index);
+  BINARY_INPUT_OBJECT* object = Keylist_Data(device->objects, params->object_bacnet_id);
+
+  if (!object) return -1;
+
+  binary_input_set_present_value(object, params->value);
 
   Get_Routed_Device_Object(0);
 

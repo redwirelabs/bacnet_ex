@@ -174,4 +174,27 @@ defmodule BACNet.Gateway.Object do
       value
     })
   end
+
+  def create_binary_input(pid, device_id, object_id, name, description, active_text, inactive_text, polarity, value) do
+    GenServer.call(pid, {
+      :create_binary_input,
+      device_id,
+      object_id,
+      name,
+      description,
+      active_text,
+      inactive_text,
+      polarity,
+      value
+    })
+  end
+
+  def set_binary_input_present_value(pid, device_id, object_id, value) do
+    GenServer.call(pid, {
+      :set_binary_input_value,
+      device_id,
+      object_id,
+      value
+    })
+  end
 end

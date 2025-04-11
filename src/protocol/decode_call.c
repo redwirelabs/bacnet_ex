@@ -14,6 +14,8 @@ const enum_tuple_t BACNET_CALL_ATOMS[] = {
   {"create_routed_command",             CALL_CREATE_ROUTED_COMMAND},
   {"set_routed_command_status",         CALL_SET_ROUTED_COMMAND_STATUS},
   {"create_characterstring_value",      CALL_CREATE_CHARACTERSTRING_VALUE},
+  {"create_binary_input",               CALL_CREATE_BINARY_INPUT},
+  {"set_binary_input_value",            CALL_SET_BINARY_INPUT_VALUE},
 };
 
 const size_t BACNET_CALL_SIZE_LOOKUP[] = {
@@ -26,6 +28,8 @@ const size_t BACNET_CALL_SIZE_LOOKUP[] = {
   sizeof(create_routed_command_t),
   sizeof(set_routed_command_status_t),
   sizeof(create_characterstring_value_t),
+  sizeof(create_binary_input_t),
+  sizeof(set_binary_input_value_t),
 };
 
 static int decode_call_type(char* buffer, int* index, uint8_t* type);
@@ -383,6 +387,74 @@ static int decode_create_characterstring_value(
   return is_invalid ? -1 : 0;
 }
 
+const enum_tuple_t BACNET_POLARITY_ENUM_TUPLE[] = {
+  {"normal",  POLARITY_NORMAL},
+  {"reverse", POLARITY_REVERSE},
+  {"max",     MAX_POLARITY},
+};
+
+static int decode_polarity(char* buffer, int* index, BACNET_POLARITY* polarity)
+{
+  char atom[MAXATOMLEN] = { 0 };
+
+  if (ei_decode_atom(buffer, index, atom) == -1)
+    return -1;
+
+  int enum_value = find_enum_value(BACNET_POLARITY_ENUM_TUPLE, atom);
+  if (enum_value == -1)
+    return -1;
+
+  *polarity = (BACNET_POLARITY)enum_value;
+
+  return 0;
+}
+
+static int decode_create_binary_input(
+  char* buffer,
+  int* index,
+  create_binary_input_t* data
+) {
+  long size = 0;
+  int  type = 0;
+
+  bool is_invalid =
+       ei_decode_ulong(buffer, index, (unsigned long*)&data->device_bacnet_id)
+    || ei_decode_ulong(buffer, index, (unsigned long*)&data->object_bacnet_id)
+    || ei_get_type(buffer, index, &type, (int*)&size)
+    || (size >= sizeof(data->name))
+    || (memset(data->name, 0, sizeof(data->name)) == NULL)
+    || ei_decode_binary(buffer, index, data->name, &size)
+    || ei_get_type(buffer, index, &type, (int*)&size)
+    || (size >= sizeof(data->description))
+    || (memset(data->description, 0, sizeof(data->description)) == NULL)
+    || ei_decode_binary(buffer, index, data->description, &size)
+    || ei_get_type(buffer, index, &type, (int*)&size)
+    || (size >= sizeof(data->active_text))
+    || (memset(data->active_text, 0, sizeof(data->active_text)) == NULL)
+    || ei_decode_binary(buffer, index, data->active_text, &size)
+    || ei_get_type(buffer, index, &type, (int*)&size)
+    || (size >= sizeof(data->inactive_text))
+    || (memset(data->inactive_text, 0, sizeof(data->inactive_text)) == NULL)
+    || ei_decode_binary(buffer, index, data->inactive_text, &size)
+    || decode_polarity(buffer, index, &data->polarity)
+    || ei_decode_boolean(buffer, index, (int*)&data->value);
+
+  return is_invalid ? -1 : 0;
+}
+
+static int decode_set_binary_input_value(
+  char* buffer,
+  int* index,
+  set_binary_input_value_t* data
+) {
+  bool is_invalid =
+       ei_decode_ulong(buffer, index, (unsigned long*)&data->device_bacnet_id)
+    || ei_decode_ulong(buffer, index, (unsigned long*)&data->object_bacnet_id)
+    || ei_decode_boolean(buffer, index, (int*)&data->value);
+
+  return is_invalid ? -1 : 0;
+}
+
 static int decode_call_data(
   char* buffer,
   int* index,
@@ -416,6 +488,12 @@ static int decode_call_data(
 
     case CALL_CREATE_CHARACTERSTRING_VALUE:
       return decode_create_characterstring_value(buffer, index, data);
+
+    case CALL_CREATE_BINARY_INPUT:
+      return decode_create_binary_input(buffer, index, data);
+
+    case CALL_SET_BINARY_INPUT_VALUE:
+      return decode_set_binary_input_value(buffer, index, data);
 
     default:
       return -1;
