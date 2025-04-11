@@ -12,6 +12,7 @@
 #include "bacnet.h"
 #include "log.h"
 #include "protocol/decode_call.h"
+#include "object/characterstring_value.h"
 #include "object/command.h"
 
 #define REPLY_OK(reply) \
@@ -49,6 +50,10 @@ handle_set_routed_multistate_value(set_routed_multistate_input_value_t* params);
 static int handle_create_routed_command(create_routed_command_t* params);
 static int handle_set_routed_command_status(set_routed_command_status_t* params);
 
+static int
+handle_create_characterstring_value(create_characterstring_value_t* params);
+handle_create_characterstring_value(create_characterstring_value_t *params);
+
 static call_handler_t CALL_HANDLERS_BY_TYPE[] = {
   (call_handler_t)handle_create_gateway,
   (call_handler_t)handle_create_routed_device,
@@ -58,6 +63,7 @@ static call_handler_t CALL_HANDLERS_BY_TYPE[] = {
   (call_handler_t)handle_set_routed_multistate_value,
   (call_handler_t)handle_create_routed_command,
   (call_handler_t)handle_set_routed_command_status,
+  (call_handler_t)handle_create_characterstring_value,
 };
 
 /**
@@ -287,6 +293,28 @@ static object_functions_t SUPPORTED_OBJECT_TABLE[] = {
     .Object_Name = command_name,
     .Object_Read_Property = command_read_property,
     .Object_Write_Property = command_write_property,
+    .Object_RPM_List = command_property_lists,
+    .Object_RR_Info = NULL,
+    .Object_Iterator = NULL,
+    .Object_Value_List = NULL,
+    .Object_COV = NULL,
+    .Object_COV_Clear = NULL,
+    .Object_Intrinsic_Reporting = NULL,
+    .Object_Add_List_Element = NULL,
+    .Object_Remove_List_Element = NULL,
+    .Object_Create = NULL,
+    .Object_Delete = NULL,
+    .Object_Timer = NULL,
+  },
+  {
+    .Object_Type = OBJECT_CHARACTERSTRING_VALUE,
+    .Object_Init = characterstring_value_init,
+    .Object_Count = characterstring_value_count,
+    .Object_Index_To_Instance = characterstring_value_index_to_instance,
+    .Object_Valid_Instance = characterstring_value_valid_instance,
+    .Object_Name = characterstring_value_name,
+    .Object_Read_Property = characterstring_value_read_property,
+    .Object_Write_Property = NULL,
     .Object_RPM_List = command_property_lists,
     .Object_RR_Info = NULL,
     .Object_Iterator = NULL,
@@ -555,6 +583,31 @@ static int handle_set_routed_command_status(set_routed_command_status_t* params)
   if (!object) return -1;
 
   command_update_status(object, params->status == COMMAND_SUCCEEDED);
+
+  Get_Routed_Device_Object(0);
+
+  return 0;
+}
+
+static int
+handle_create_characterstring_value(create_characterstring_value_t* params)
+{
+  uint32_t device_index =
+    Routed_Device_Instance_To_Index(params->device_bacnet_id);
+
+  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(device_index);
+
+  uint32_t bacnet_id =
+    characterstring_value_create(
+      device,
+      params->object_bacnet_id,
+      params->name,
+      params->description,
+      params->value
+    );
+
+  if (bacnet_id != params->object_bacnet_id)
+    return -1;
 
   Get_Routed_Device_Object(0);
 

@@ -61,6 +61,7 @@ set(SOURCES
     src/log.c
     src/main.c
     src/port.c
+    src/object/characterstring_value.c
     src/object/command.c
     src/protocol/decode_call.c
     src/protocol/enum.c

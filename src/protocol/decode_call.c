@@ -13,6 +13,7 @@ const enum_tuple_t BACNET_CALL_ATOMS[] = {
   {"set_routed_multistate_input_value", CALL_SET_ROUTED_MULTISTATE_INPUT_VALUE},
   {"create_routed_command",             CALL_CREATE_ROUTED_COMMAND},
   {"set_routed_command_status",         CALL_SET_ROUTED_COMMAND_STATUS},
+  {"create_characterstring_value",      CALL_CREATE_CHARACTERSTRING_VALUE},
 };
 
 const size_t BACNET_CALL_SIZE_LOOKUP[] = {
@@ -24,6 +25,7 @@ const size_t BACNET_CALL_SIZE_LOOKUP[] = {
   sizeof(set_routed_multistate_input_value_t),
   sizeof(create_routed_command_t),
   sizeof(set_routed_command_status_t),
+  sizeof(create_characterstring_value_t),
 };
 
 static int decode_call_type(char* buffer, int* index, uint8_t* type);
@@ -354,6 +356,33 @@ static int decode_set_routed_command_status(
   return is_invalid ? -1 : 0;
 }
 
+static int decode_create_characterstring_value(
+  char* buffer,
+  int* index,
+  create_characterstring_value_t* data
+) {
+  long size = 0;
+  int  type = 0;
+
+  bool is_invalid =
+       ei_decode_ulong(buffer, index, (unsigned long*)&data->device_bacnet_id)
+    || ei_decode_ulong(buffer, index, (unsigned long*)&data->object_bacnet_id)
+    || ei_get_type(buffer, index, &type, (int*)&size)
+    || (size >= sizeof(data->name))
+    || (memset(data->name, 0, sizeof(data->name)) == NULL)
+    || ei_decode_binary(buffer, index, data->name, &size)
+    || ei_get_type(buffer, index, &type, (int*)&size)
+    || (size >= sizeof(data->description))
+    || (memset(data->description, 0, sizeof(data->description)) == NULL)
+    || ei_decode_binary(buffer, index, data->description, &size)
+    || ei_get_type(buffer, index, &type, (int*)&size)
+    || (size >= sizeof(data->value))
+    || (memset(data->value, 0, sizeof(data->value)) == NULL)
+    || ei_decode_binary(buffer, index, data->value, &size);
+
+  return is_invalid ? -1 : 0;
+}
+
 static int decode_call_data(
   char* buffer,
   int* index,
@@ -384,6 +413,9 @@ static int decode_call_data(
 
     case CALL_SET_ROUTED_COMMAND_STATUS:
       return decode_set_routed_command_status(buffer, index, data);
+
+    case CALL_CREATE_CHARACTERSTRING_VALUE:
+      return decode_create_characterstring_value(buffer, index, data);
 
     default:
       return -1;

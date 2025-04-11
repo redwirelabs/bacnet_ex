@@ -12,6 +12,7 @@ typedef enum {
   CALL_SET_ROUTED_MULTISTATE_INPUT_VALUE,
   CALL_CREATE_ROUTED_COMMAND,
   CALL_SET_ROUTED_COMMAND_STATUS,
+  CALL_CREATE_CHARACTERSTRING_VALUE,
   CALL_UNKNOWN = 255,
 } __attribute__((packed)) bacnet_call_type_t;
 
@@ -70,6 +71,14 @@ typedef struct {
 
   bacnet_command_status_t status;
 } set_routed_command_status_t;
+
+typedef struct {
+  uint32_t device_bacnet_id;
+  uint32_t object_bacnet_id;
+  char     name[MAXATOMLEN];
+  char     description[MAXATOMLEN];
+  char     value[MAXATOMLEN];
+} create_characterstring_value_t;
 
 int bacnet_call_malloc(bacnet_call_type_t type, void** call);
 

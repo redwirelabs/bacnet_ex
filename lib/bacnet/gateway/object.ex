@@ -163,4 +163,15 @@ defmodule BACNet.Gateway.Object do
       status
     })
   end
+
+  def create_characterstring_value(pid, device_id, object_id, name, description, value) do
+    GenServer.call(pid, {
+      :create_characterstring_value,
+      device_id,
+      object_id,
+      name,
+      description,
+      value
+    })
+  end
 end
