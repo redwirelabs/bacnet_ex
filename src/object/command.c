@@ -189,6 +189,21 @@ bool command_name_set(uint32_t instance, char *name)
 }
 
 /**
+ * @brief Retrieve the description of a Command Object.
+ *
+ * @param[in] object - The Command Object.
+ * @param[out] description - The Objects's description.
+ */
+bool command_description(
+  COMMAND_OBJECT* object,
+  BACNET_CHARACTER_STRING* description
+) {
+  if (strlen(object->description) <= 0) return false;
+
+  return characterstring_init_ansi(description, object->description);
+}
+
+/**
  * @brief Set the present value of a Command Object.
  *
  * @param device - The BACnet device that owns the Command Object.
@@ -220,7 +235,7 @@ bool command_update_status(COMMAND_OBJECT* object, bool successful)
   object->successful    = successful;
 
   return true;
- }
+}
 
 /**
  * @brief BACnet read-property handler for a Command Object.
@@ -256,6 +271,12 @@ int command_read_property(BACNET_READ_PROPERTY_DATA* data)
       BACNET_CHARACTER_STRING name;
       command_name(instance, &name);
       apdu_len = encode_application_character_string(&apdu[0], &name);
+      break;
+
+    case PROP_DESCRIPTION:
+      BACNET_CHARACTER_STRING description;
+      command_description(object, &description);
+      apdu_len = encode_application_character_string(&apdu[0], &description);
       break;
 
     case PROP_OBJECT_TYPE:

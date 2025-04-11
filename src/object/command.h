@@ -7,8 +7,8 @@
 #define MAX_COMMAND_ACTIONS 8
 #endif
 
-#define MAX_OBJ_NAME_LEN 32
-#define MAX_OBJ_DESC_LEN 64
+#define MAX_OBJ_NAME_LEN 128
+#define MAX_OBJ_DESC_LEN 128
 
 typedef struct {
   BACNET_OBJECT_TYPE type;

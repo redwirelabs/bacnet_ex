@@ -510,7 +510,12 @@ handle_create_routed_analog_input(create_routed_analog_input_t* params)
     Routed_Device_Instance_To_Index(params->device_bacnet_id);
 
   Get_Routed_Device_Object(device_index);
-  Routed_Analog_Input_Create(params->object_bacnet_id);
+  Routed_Analog_Input_Create(
+    params->object_bacnet_id,
+    params->name,
+    params->description
+  );
+
   Routed_Analog_Input_Units_Set(params->object_bacnet_id, params->unit);
   Routed_Analog_Input_Name_Set(params->object_bacnet_id, params->name);
   Get_Routed_Device_Object(0);
@@ -542,8 +547,12 @@ handle_create_routed_multistate_input(create_routed_multistate_input_t* params)
     Routed_Device_Instance_To_Index(params->device_bacnet_id);
 
   Get_Routed_Device_Object(device_index);
-  Routed_Multistate_Input_Create(params->object_bacnet_id);
-  Routed_Multistate_Input_Name_Set(params->object_bacnet_id, params->name);
+
+  Routed_Multistate_Input_Create(
+    params->object_bacnet_id,
+    params->name,
+    params->description
+  );
 
   Routed_Multistate_Input_State_Text_List_Set(
     params->object_bacnet_id,

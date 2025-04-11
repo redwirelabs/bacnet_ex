@@ -32,9 +32,11 @@ typedef struct {
 } create_routed_device_t;
 
 typedef struct {
-  uint32_t                 device_bacnet_id;
-  uint32_t                 object_bacnet_id;
-  char                     name[MAXATOMLEN];
+  uint32_t device_bacnet_id;
+  uint32_t object_bacnet_id;
+  char     name[MAXATOMLEN];
+  char     description[MAXATOMLEN];
+
   BACNET_ENGINEERING_UNITS unit;
 } create_routed_analog_input_t;
 
@@ -48,6 +50,7 @@ typedef struct {
   uint32_t device_bacnet_id;
   uint32_t object_bacnet_id;
   char     name[MAXATOMLEN];
+  char     description[MAXATOMLEN];
   char*    states;
   size_t   states_length;
 } create_routed_multistate_input_t;

@@ -15,18 +15,20 @@ defmodule BACNet.Gateway.Object do
     - `unit`: The unit of measurement for the analog input, represented as an atom.
   """
   @spec create_analog_input(
-    pid       :: pid,
-    device_id :: integer,
-    object_id :: integer,
-    name      :: String.t,
-    unit      :: atom
+    pid         :: pid,
+    device_id   :: integer,
+    object_id   :: integer,
+    name        :: String.t,
+    description :: String.t,
+    unit        :: atom
   ) :: :ok | {:error, term}
-  def create_analog_input(pid, device_id, object_id, name, unit) do
+  def create_analog_input(pid, device_id, object_id, name, description, unit) do
     GenServer.call(pid, {
       :create_routed_analog_input,
       device_id,
       object_id,
       name,
+      description,
       unit,
     })
   end
@@ -68,18 +70,20 @@ defmodule BACNet.Gateway.Object do
     - `states`: A set of strings representing the object's states.
   """
   @spec create_multistate_input(
-    pid       :: pid,
-    device_id :: integer,
-    object_id :: integer,
-    name      :: String.t,
-    states    :: [String.t]
+    pid         :: pid,
+    device_id   :: integer,
+    object_id   :: integer,
+    name        :: String.t,
+    description :: String.t,
+    states      :: [String.t]
   ) :: :ok | {:error, term}
-  def create_multistate_input(pid, device_id, object_id, name, states) do
+  def create_multistate_input(pid, device_id, object_id, name, description, states) do
     GenServer.call(pid, {
       :create_routed_multistate_input,
       device_id,
       object_id,
       name,
+      description,
       states,
     })
   end

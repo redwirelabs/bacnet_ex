@@ -195,6 +195,10 @@ static int decode_create_routed_analog_input(
     || (size >= sizeof(data->name))
     || (memset(data->name, 0, sizeof(data->name)) == NULL)
     || ei_decode_binary(buffer, index, data->name, &size)
+    || ei_get_type(buffer, index, &type, (int*)&size)
+    || (size >= sizeof(data->description))
+    || (memset(data->description, 0, sizeof(data->description)) == NULL)
+    || ei_decode_binary(buffer, index, data->description, &size)
     || decode_bacnet_unit_atom(buffer, index, &data->unit);
 
   return is_invalid ? -1 : 0;
@@ -270,6 +274,10 @@ static int decode_create_routed_multistate_input(
     || (size >= sizeof(data->name))
     || (memset(data->name, 0, sizeof(data->name)) == NULL)
     || ei_decode_binary(buffer, index, data->name, &size)
+    || ei_get_type(buffer, index, &type, (int*)&size)
+    || (size >= sizeof(data->description))
+    || (memset(data->description, 0, sizeof(data->description)) == NULL)
+    || ei_decode_binary(buffer, index, data->description, &size)
     || decode_multistate_states(buffer, index, &data->states, &data->states_length);
 
   return is_invalid ? -1 : 0;
