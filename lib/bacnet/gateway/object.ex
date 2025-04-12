@@ -65,6 +65,7 @@ defmodule BACNet.Gateway.Object do
     - `device_id`: The ID of the BACnet device where the object will be created.
     - `object_id`: The unique ID for the new multistate input object.
     - `name`: A unique name for the object.
+    - `states`: A set of strings representing the object's states.
   """
   @spec create_multistate_input(
     pid       :: pid,
@@ -105,6 +106,61 @@ defmodule BACNet.Gateway.Object do
       device_id,
       object_id,
       value,
+    })
+  end
+
+  @doc """
+  Creates a new command object.
+
+  ## Parameters
+
+    - `pid`: The PID of the GenServer managing BACnet communications.
+    - `device_id`: The ID of the BACnet device where the object will be created.
+    - `object_id`: The unique ID for the new command object.
+    - `name`: A unique name for the object.
+    - `description`: A short description for the command object.
+  """
+  @spec create_command(
+    pid         :: pid,
+    device_id   :: integer,
+    object_id   :: integer,
+    name        :: String.t,
+    description :: String.t,
+    value       :: nil | non_neg_integer
+  ) :: :ok | {:error, term}
+  def create_command(pid, device_id, object_id, name, description, value \\ nil) do
+    GenServer.call(pid, {
+      :create_routed_command,
+      device_id,
+      object_id,
+      name,
+      description,
+      value
+    })
+  end
+
+  @doc """
+  Set the status of an active command.
+
+  ## Parameters
+
+    - `pid`: The PID of the GenServer managing BACnet communications.
+    - `device_id`: The ID of the BACnet device where the object will be created.
+    - `object_id`: The unique ID for the new command object.
+    - `status`: The status of the command.
+  """
+  @spec set_command_status(
+    pid       :: pid,
+    device_id :: integer,
+    object_id :: integer,
+    status     :: :succeeded | :failed
+  ) :: :ok | {:error, term}
+  def set_command_status(pid, device_id, object_id, status) do
+    GenServer.call(pid, {
+      :set_routed_command_status,
+      device_id,
+      object_id,
+      status
     })
   end
 end

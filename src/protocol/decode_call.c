@@ -5,12 +5,14 @@
 #include "protocol/enum.h"
 
 const enum_tuple_t BACNET_CALL_ATOMS[] = {
-  {"create_gateway",                    0},
-  {"create_routed_device",              1},
-  {"create_routed_analog_input",        2},
-  {"set_routed_analog_input_value",     3},
-  {"create_routed_multistate_input",    4},
-  {"set_routed_multistate_input_value", 5},
+  {"create_gateway",                    CALL_CREATE_GATEWAY},
+  {"create_routed_device",              CALL_CREATE_ROUTED_DEVICE},
+  {"create_routed_analog_input",        CALL_CREATE_ROUTED_ANALOG_INPUT},
+  {"set_routed_analog_input_value",     CALL_SET_ROUTED_ANALOG_INPUT_VALUE},
+  {"create_routed_multistate_input",    CALL_CREATE_ROUTED_MULTISTATE_INPUT},
+  {"set_routed_multistate_input_value", CALL_SET_ROUTED_MULTISTATE_INPUT_VALUE},
+  {"create_routed_command",             CALL_CREATE_ROUTED_COMMAND},
+  {"set_routed_command_status",         CALL_SET_ROUTED_COMMAND_STATUS},
 };
 
 const size_t BACNET_CALL_SIZE_LOOKUP[] = {
@@ -20,6 +22,8 @@ const size_t BACNET_CALL_SIZE_LOOKUP[] = {
   sizeof(set_routed_analog_input_value_t),
   sizeof(create_routed_multistate_input_t),
   sizeof(set_routed_multistate_input_value_t),
+  sizeof(create_routed_command_t),
+  sizeof(set_routed_command_status_t),
 };
 
 static int decode_call_type(char* buffer, int* index, uint8_t* type);
@@ -113,8 +117,10 @@ static int decode_call_type(char* buffer, int* index, uint8_t* type)
   }
 
   int enum_value = find_enum_value(BACNET_CALL_ATOMS, atom);
-  if (enum_value == -1)
+  if (enum_value == -1) {
+    *type = CALL_UNKNOWN;
     return -1;
+  }
 
   *type = enum_value;
 
@@ -276,6 +282,78 @@ static int decode_set_routed_multistate_input_value(
   return is_invalid ? -1 : 0;
 }
 
+static int
+decode_command_value(char* buffer, int* index, create_routed_command_t* data) {
+  bool is_invalid =
+    ei_decode_ulong(buffer, index, (unsigned long*)&data->value);
+
+  data->in_progress = true;
+
+  return is_invalid ? -1 : 0;
+}
+
+static int decode_create_routed_command(
+  char* buffer,
+  int* index,
+  create_routed_command_t* data
+) {
+  long size = 0;
+  int  type = 0;
+
+  bool is_invalid =
+       ei_decode_ulong(buffer, index, (unsigned long*)&data->device_bacnet_id)
+    || ei_decode_ulong(buffer, index, (unsigned long*)&data->object_bacnet_id)
+    || ei_get_type(buffer, index, &type, (int*)&size)
+    || (size >= sizeof(data->name))
+    || (memset(data->name, 0, sizeof(data->name)) == NULL)
+    || ei_decode_binary(buffer, index, data->name, &size)
+    || ei_get_type(buffer, index, &type, (int*)&size)
+    || (size >= sizeof(data->description))
+    || (memset(data->description, 0, sizeof(data->description)) == NULL)
+    || ei_decode_binary(buffer, index, data->description, &size)
+    || ei_get_type(buffer, index, &type, (int*)&size)
+    || type == ERL_ATOM_EXT ? 0 : decode_command_value(buffer, index, data);
+
+  return is_invalid ? -1 : 0;
+}
+
+const enum_tuple_t BACNET_COMMAND_STATUS[] = {
+  {"succeeded", COMMAND_SUCCEEDED},
+  {"failed",    COMMAND_FAILED},
+};
+
+static int decode_command_status(
+  char* buffer,
+  int* index,
+  bacnet_command_status_t* status
+) {
+  char atom[MAXATOMLEN] = { 0 };
+
+  if (ei_decode_atom(buffer, index, atom) == -1)
+    return -1;
+
+  int enum_value = find_enum_value(BACNET_COMMAND_STATUS, atom);
+  if (enum_value == -1)
+    return -1;
+
+  *status = (bacnet_command_status_t)enum_value;
+
+  return 0;
+}
+
+static int decode_set_routed_command_status(
+  char* buffer,
+  int* index,
+  set_routed_command_status_t* data
+) {
+  bool is_invalid =
+       ei_decode_ulong(buffer, index, (unsigned long*)&data->device_bacnet_id)
+    || ei_decode_ulong(buffer, index, (unsigned long*)&data->object_bacnet_id)
+    || decode_command_status(buffer, index, &data->status);
+
+  return is_invalid ? -1 : 0;
+}
+
 static int decode_call_data(
   char* buffer,
   int* index,
@@ -300,6 +378,12 @@ static int decode_call_data(
 
     case CALL_SET_ROUTED_MULTISTATE_INPUT_VALUE:
       return decode_set_routed_multistate_input_value(buffer, index, data);
+
+    case CALL_CREATE_ROUTED_COMMAND:
+      return decode_create_routed_command(buffer, index, data);
+
+    case CALL_SET_ROUTED_COMMAND_STATUS:
+      return decode_set_routed_command_status(buffer, index, data);
 
     default:
       return -1;

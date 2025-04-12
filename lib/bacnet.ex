@@ -10,7 +10,10 @@ defmodule BACNet do
   defmodule State do
     @doc false
 
-    defstruct [:port]
+    defstruct [
+      :owner,
+      :port,
+    ]
   end
 
   @doc """
@@ -18,12 +21,14 @@ defmodule BACNet do
   """
   @spec start_link(any, GenServer.options()) :: GenServer.on_start()
   def start_link(args, opts \\ []) do
+    args = Keyword.put_new(args, :owner, self())
+
     GenServer.start_link(__MODULE__, args, opts)
   end
 
   @impl GenServer
   def init(args) do
-    bacnetd_exe = "#{:code.priv_dir(:bacnet)}/bacnetd"
+    bacnetd_exe = Path.join(:code.priv_dir(:bacnet), "bacnetd")
 
     env =
       [
@@ -41,7 +46,10 @@ defmodule BACNet do
         [:binary, :use_stdio, packet: 4, env: env]
       )
 
-    state = %State{port: port}
+    state = %State{
+      owner: args[:owner],
+      port: port,
+    }
 
     {:ok, state}
   end
@@ -56,26 +64,20 @@ defmodule BACNet do
 
   @impl GenServer
   def handle_info({_port, {:data, data}}, state) do
-    try do
-      data
-      |> :erlang.binary_to_term
-      |> process_message
-    catch
-      _ -> nil
+    maybe_message =
+      try do
+        :erlang.binary_to_term(data)
+      rescue
+        _ -> {:error, :invalid_term, data}
+      end
+
+    case maybe_message do
+      {:log, level, message} -> Logger.log(level, message)
+      {:"$gen_reply", to, result} -> GenServer.reply(to, result)
+      {:"$event", message} -> send(state.owner, message)
+      {:error, :invalid_term, data} -> Logger.warning("Received bad data #{inspect(data)}")
     end
 
     {:noreply, state}
-  end
-
-  defp process_message({:log, level, message}) do
-    Logger.log(level, message)
-  end
-
-  defp process_message({:"$gen_reply", to, result}) do
-    GenServer.reply(to, result)
-  end
-
-  defp process_message(unknown) do
-    Logger.warning("Unknown message received #{inspect(unknown)}")
   end
 end

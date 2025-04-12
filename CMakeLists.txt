@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20.0 FATAL_ERROR)
 
 # dependency manager
-set(CPM_VERSION 0.40.2)
+set(CPM_VERSION 0.40.5)
 set(CPM_SOURCE_CACHE ${CMAKE_CURRENT_SOURCE_DIR}/_build/cache/cpm)
 set(CPM_USE_NAMED_CACHE_DIRECTORIES false)
 set(CPM_PATH "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_VERSION}.cmake")
@@ -52,24 +52,27 @@ CPMFindPackage(
     PATCHES ${PATCHES})
 
 # setup erlang
-set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} $ENV{ERL_EI_LIBDIR})
-find_library(ERLANG_EI_LIB ei)
-include_directories($ENV{ERL_EI_INCLUDE_DIR})
+find_library(libei NAMES ei HINTS $ENV{ERL_EI_LIBDIR} REQUIRED)
 
 # sources
-INCLUDE_DIRECTORIES(src/)
 set(SOURCES
     src/bacnet.c
     src/log.c
     src/main.c
     src/port.c
+    src/object/command.c
     src/protocol/decode_call.c
-    src/protocol/enum.c)
+    src/protocol/enum.c
+    src/protocol/event.c)
 
 # build
 project(bacnetd)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 add_executable(bacnetd ${SOURCES})
-set_target_properties(bacnetd PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE $ENV{MIX_APP_PATH}/priv)
-target_link_libraries(bacnetd PRIVATE bacnet-stack ${ERLANG_EI_LIB})
+
+target_include_directories(bacnetd
+    PRIVATE
+        $ENV{ERL_EI_INCLUDE_DIR}
+        src/)
+
+target_link_libraries(bacnetd PRIVATE bacnet-stack ${libei})
