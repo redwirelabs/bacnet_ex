@@ -24,7 +24,8 @@
 static pthread_t thread_id;
 pthread_mutex_t exit_signal_lock = PTHREAD_MUTEX_INITIALIZER;
 static bool should_exit = false;
-static int bacnet_network_id = 1000;
+static int bacnet_farside_network_number = 10001;
+int bacnet_nearside_network_number = 10002;
 extern int gateway_instance;
 
 static int init_service_handlers();
@@ -67,7 +68,7 @@ int bacnet_start_services()
 {
   const char* network_id_raw = getenv("BACNET_NETWORK_ID");
   if (network_id_raw)
-    bacnet_network_id = (int)strtol(network_id_raw, NULL, 0);
+    bacnet_farside_network_number = (int)strtol(network_id_raw, NULL, 0);
 
   if (gateway_instance)
     Device_Set_Object_Instance_Number(gateway_instance);
@@ -158,7 +159,7 @@ cleanup:
 
 static void* event_loop(void* arg)
 {
-  int     network_ids[2]   = { bacnet_network_id, -1 };
+  int     network_ids[2]   = { bacnet_farside_network_number, -1 };
   uint8_t buffer[MAX_MPDU] = { 0 };
 
   LOG_DEBUG("bacnetd: starting event_loop");
@@ -418,7 +419,7 @@ static int handle_create_routed_device(create_routed_device_t* device)
     );
 
   DEVICE_OBJECT_DATA* child = Get_Routed_Device_Object(index);
-  set_device_address(child, bacnet_network_id);
+  set_device_address(child, bacnet_farside_network_number);
 
   return 0;
 }
