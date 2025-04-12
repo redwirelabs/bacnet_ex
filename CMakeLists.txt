@@ -35,7 +35,7 @@ project(bacnetd)
 # set(CMAKE_BUILD_TYPE Release)
 # Debug
 set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_C_FLAGS_DEBUG "-g")
+set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
 add_executable(bacnetd ${SOURCES})
 set_target_properties(bacnetd PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${MIX_APP_PATH}/priv)
