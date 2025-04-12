@@ -1,13 +1,8 @@
 #include <stdlib.h>
-#include <bacnet/bacdef.h>
-#include <bacnet/rp.h>
-#include <bacnet/wp.h>
 #include <bacnet/basic/object/device.h>
 #include <bacnet/basic/object/routed_object.h>
-#include <bacnet/basic/sys/keylist.h>
 
 #include "object/binary_input.h"
-#include "protocol/event.h"
 
 static const int required_properties[] = {
   PROP_OBJECT_IDENTIFIER,
@@ -124,6 +119,11 @@ uint32_t binary_input_index_to_instance(unsigned index) {
   return key;
 }
 
+/**
+ * @brief Checks if the Object instance is a valid binary-input Object.
+ *
+ * @param instance - Object instance number.
+ */
 bool binary_input_valid_instance(uint32_t instance) {
   DEVICE_OBJECT_DATA*  device = Get_Routed_Device_Object(-1);
   BINARY_INPUT_OBJECT* object = Keylist_Data(device->objects, instance);
@@ -134,6 +134,12 @@ bool binary_input_valid_instance(uint32_t instance) {
   return true;
 }
 
+/**
+ * @brief Retrieve the name of a binary-input Object.
+ *
+ * @param[in] instance - Object instance number.
+ * @param[out] name - The Objects's name.
+ */
 bool binary_input_name(uint32_t instance, BACNET_CHARACTER_STRING* name) {
   DEVICE_OBJECT_DATA*  device = Get_Routed_Device_Object(-1);
   BINARY_INPUT_OBJECT* object = Keylist_Data(device->objects, instance);
@@ -144,6 +150,12 @@ bool binary_input_name(uint32_t instance, BACNET_CHARACTER_STRING* name) {
   return characterstring_init_ansi(name, object->name);
 }
 
+/**
+ * @brief Retrieve the description of a binary-input Object.
+ *
+ * @param[in] object - A binary-input Object.
+ * @param[out] description - The Objects's description.
+ */
 bool binary_input_description(
   BINARY_INPUT_OBJECT* object,
   BACNET_CHARACTER_STRING* description
@@ -153,6 +165,12 @@ bool binary_input_description(
   return characterstring_init_ansi(description, object->description);
 }
 
+/**
+ * @brief Retrieve the active-text value of a binary-input Object.
+ *
+ * @param[in] object - A binary-input Object.
+ * @param[out] active_text - The Objects's active-text value.
+ */
 bool binary_input_active_text(
   BINARY_INPUT_OBJECT* object,
   BACNET_CHARACTER_STRING* active_text
@@ -162,6 +180,12 @@ bool binary_input_active_text(
   return characterstring_init_ansi(active_text, object->active_text);
 }
 
+/**
+ * @brief Retrieve the inactive-text value of a binary-input Object.
+ *
+ * @param[in] object - A binary-input Object.
+ * @param[out] inactive_text - The Objects's inactive-text value.
+ */
 bool binary_input_inactive_text(
   BINARY_INPUT_OBJECT* object,
   BACNET_CHARACTER_STRING* inactive_text
@@ -171,6 +195,13 @@ bool binary_input_inactive_text(
   return characterstring_init_ansi(inactive_text, object->inactive_text);
 }
 
+/**
+ * @brief BACnet read-property handler for binary-input Object.
+ *
+ * @param[out] data - Holds request and reply data.
+ *
+ * @return Byte count of the APDU or BACNET_STATUS_ERROR.
+ */
 int binary_input_read_property(BACNET_READ_PROPERTY_DATA* data)
 {
   bool is_data_invalid =

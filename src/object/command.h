@@ -3,12 +3,11 @@
 
 #include <bacnet/bacaction.h>
 
+#include "object/common.h"
+
 #ifndef MAX_COMMAND_ACTIONS
 #define MAX_COMMAND_ACTIONS 8
 #endif
-
-#define MAX_OBJ_NAME_LEN 128
-#define MAX_OBJ_DESC_LEN 128
 
 typedef struct {
   BACNET_OBJECT_TYPE type;
@@ -16,8 +15,8 @@ typedef struct {
   uint32_t present_value;
   bool     in_progress;
   bool     successful;
-  char     name[MAX_OBJ_NAME_LEN];
-  char     description[MAX_OBJ_DESC_LEN];
+  char     name[MAX_STRING_LEN];
+  char     description[MAX_STRING_LEN];
 
   BACNET_ACTION_LIST actions[MAX_COMMAND_ACTIONS];
 } COMMAND_OBJECT;

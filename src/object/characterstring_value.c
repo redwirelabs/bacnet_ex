@@ -1,13 +1,8 @@
 #include <stdlib.h>
-#include <bacnet/bacdef.h>
-#include <bacnet/rp.h>
-#include <bacnet/wp.h>
 #include <bacnet/basic/object/device.h>
 #include <bacnet/basic/object/routed_object.h>
-#include <bacnet/basic/sys/keylist.h>
 
 #include "object/characterstring_value.h"
-#include "protocol/event.h"
 
 static const int required_properties[] = {
   PROP_OBJECT_IDENTIFIER,
@@ -122,6 +117,12 @@ uint32_t characterstring_value_index_to_instance(unsigned index) {
   return key;
 }
 
+/**
+ * @brief Checks if the Object instance is a valid character-string value
+ *        Object.
+ *
+ * @param instance - Object instance number.
+ */
 bool characterstring_value_valid_instance(uint32_t instance) {
   DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
 
@@ -134,6 +135,12 @@ bool characterstring_value_valid_instance(uint32_t instance) {
   return true;
 }
 
+/**
+ * @brief Retrieve the name of a character-string Object.
+ *
+ * @param[in] instance - Object instance number.
+ * @param[out] name - The Objects's name.
+ */
 bool
 characterstring_value_name(uint32_t instance, BACNET_CHARACTER_STRING* name) {
   DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
@@ -147,36 +154,43 @@ characterstring_value_name(uint32_t instance, BACNET_CHARACTER_STRING* name) {
   return characterstring_init_ansi(name, object->name);
 }
 
+/**
+ * @brief Retrieve the description of a character-string Object.
+ *
+ * @param[in] object - A character-string Object.
+ * @param[out] description - The Objects's description.
+ */
 bool characterstring_value_description(
-  uint32_t instance,
+  CHARACTERSTRING_VALUE_OBJECT* object,
   BACNET_CHARACTER_STRING* description
 ) {
-  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
-
-  CHARACTERSTRING_VALUE_OBJECT* object =
-    Keylist_Data(device->objects, instance);
-
-  if (object == NULL) return false;
   if (strlen(object->description) <= 0) return false;
 
   return characterstring_init_ansi(description, object->description);
 }
 
+/**
+ * @brief Retrieve the present-value of a character-string Object.
+ *
+ * @param[in] object - A character-string Object.
+ * @param[out] value - The Objects's present-value.
+ */
 bool characterstring_value_present_value(
-  uint32_t instance,
+  CHARACTERSTRING_VALUE_OBJECT* object,
   BACNET_CHARACTER_STRING* value
 ) {
-  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
-
-  CHARACTERSTRING_VALUE_OBJECT* object =
-    Keylist_Data(device->objects, instance);
-
-  if (object == NULL) return false;
   if (strlen(object->present_value) <= 0) return false;
 
   return characterstring_init_ansi(value, object->present_value);
 }
 
+/**
+ * @brief BACnet read-property handler for character-string Object.
+ *
+ * @param[out] data - Holds request and reply data.
+ *
+ * @return Byte count of the APDU or BACNET_STATUS_ERROR.
+ */
 int characterstring_value_read_property(BACNET_READ_PROPERTY_DATA* data)
 {
   bool is_data_invalid =
@@ -218,7 +232,7 @@ int characterstring_value_read_property(BACNET_READ_PROPERTY_DATA* data)
 
     case PROP_DESCRIPTION:
       BACNET_CHARACTER_STRING description;
-      characterstring_value_description(data->object_instance, &description);
+      characterstring_value_description(object, &description);
       apdu_len = encode_application_character_string(&apdu[0], &description);
       break;
 
@@ -229,7 +243,7 @@ int characterstring_value_read_property(BACNET_READ_PROPERTY_DATA* data)
 
     case PROP_PRESENT_VALUE:
       BACNET_CHARACTER_STRING present_value;
-      characterstring_value_present_value(data->object_instance, &present_value);
+      characterstring_value_present_value(object, &present_value);
       apdu_len = encode_application_character_string(&apdu[0], &present_value);
       break;
 

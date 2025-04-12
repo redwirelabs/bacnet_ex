@@ -1,18 +1,15 @@
 #ifndef BACNET_OBJECT_BINARY_INPUT_H
 #define BACNET_OBJECT_BINARY_INPUT_H
 
-#include <bacnet/bacaction.h>
-
-#define MAX_OBJ_NAME_LEN 128
-#define MAX_OBJ_DESC_LEN 128
+#include "object/common.h"
 
 typedef struct {
   BACNET_OBJECT_TYPE type;
 
-  char name[MAX_OBJ_NAME_LEN];
-  char description[MAX_OBJ_DESC_LEN];
-  char active_text[MAX_OBJ_NAME_LEN];
-  char inactive_text[MAX_OBJ_NAME_LEN];
+  char name[MAX_STRING_LEN];
+  char description[MAX_STRING_LEN];
+  char active_text[MAX_STRING_LEN];
+  char inactive_text[MAX_STRING_LEN];
   bool present_value;
 
   BACNET_POLARITY polarity;
