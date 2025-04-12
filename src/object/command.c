@@ -1,10 +1,6 @@
 #include <stdlib.h>
-#include <bacnet/bacdef.h>
-#include <bacnet/rp.h>
-#include <bacnet/wp.h>
 #include <bacnet/basic/object/device.h>
 #include <bacnet/basic/object/routed_object.h>
-#include <bacnet/basic/sys/keylist.h>
 
 #include "object/command.h"
 #include "protocol/event.h"
@@ -144,7 +140,7 @@ uint32_t command_index_to_instance(unsigned index)
  */
 bool command_valid_instance(uint32_t instance)
 {
-  DEVICE_OBJECT_DATA* device  = Get_Routed_Device_Object(-1);
+  DEVICE_OBJECT_DATA* device = Get_Routed_Device_Object(-1);
   COMMAND_OBJECT*     object = Keylist_Data(device->objects, instance);
 
   if (!object) return false;

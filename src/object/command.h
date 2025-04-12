@@ -19,7 +19,6 @@ typedef struct {
   char     name[MAX_OBJ_NAME_LEN];
   char     description[MAX_OBJ_DESC_LEN];
 
-  // TODO: needed?
   BACNET_ACTION_LIST actions[MAX_COMMAND_ACTIONS];
 } COMMAND_OBJECT;
 
