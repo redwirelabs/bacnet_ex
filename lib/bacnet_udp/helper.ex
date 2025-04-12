@@ -132,25 +132,4 @@ defmodule BACNetUDP.Helper do
       value
     )
   end
-
-  # ivan2ed - It is here as a reference.
-  # todo 0 - When the reference won't be more necessary, remove it.
-  # {~c"BACNET_IFACE", args[:network_interface]},
-  # {~c"BACNET_IP_PORT", args[:network_port]},
-  # {~c"BACNET_NETWORK_ID", args[:network_id]},
-  # {~c"BACNET_VENDOR_ID", args[:vendor_id]},
-  # {~c"BACNET_VENDOR_NAME", args[:vendor_name]},
-  # @network_interface "wlp0s20f3"
-  # @network_port "47818"
-  # @vendor_id "1532"
-  # def start!() do
-  #     {:ok, pid} = BACNet.start_link(
-  #     network_port: @network_port,
-  #     network_interface: @network_interface,
-  #     vendor_id: @vendor_id,
-  #     vendor_name: "Fellowes Inc.",
-  #     network_id: @vendor_id
-  #   )
-  #   pid
-  # end
 end
