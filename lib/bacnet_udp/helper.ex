@@ -68,7 +68,7 @@ defmodule BACNetUDP.Helper do
   If not `gateway_instance` provided, the default value is 260001.
   """
   @spec create_gateway(pid(), integer()) :: :ok | {:error, any()}
-  def create_gateway(pid, gateway_instance \\ 260001) do
+  def create_gateway(pid, gateway_instance \\ 1000) do
     BACNet.Gateway.create(pid, gateway_instance, "Relay", "Gateway", "Array Relay", "v1.0.0")
   end
 
