@@ -11,7 +11,7 @@
 #define TOSTR(x) STRINGIFY(x)
 #define ERL_TUPLE TOSTR(ERL_SMALL_TUPLE_EXT) TOSTR(ERL_SMALL_TUPLE_EXT)
 
-#if (USE_UDP_SOCKETS)
+#ifdef USE_UDP_SOCKETS
 #define PORT1 8080
 #define PORT2 8081
 #define BUFFER_SIZE 1500
@@ -47,7 +47,7 @@ static int decode_gen_call(char* buffer, int* index, gen_call_t* command);
  */
 int port_start(handle_request_t handle_request_cb)
 {
-#if !USE_UDP_SOCKETS
+#ifndef USE_UDP_SOCKETS
   if (pthread_create(&read_thread_id, NULL, &read_loop, NULL) != 0) {
     LOG_DEBUG("bacnetd: failed to create port read thread");
     return -1;
@@ -95,7 +95,7 @@ int port_wait_until_done()
  */
 int port_send(ei_x_buff* message)
 {
-#if !USE_UDP_SOCKETS
+#ifndef USE_UDP_SOCKETS
   uint32_t total_bytes = htonl(message->index);
   size_t sent_bytes = 0;
   
@@ -182,7 +182,7 @@ int port_read(ei_x_buff* message)
   return 0;
 }
 
-#if USE_UDP_SOCKETS
+#ifdef USE_UDP_SOCKETS
 static void* read_loop_udp(void *arg) {
   int sockfd;
   struct sockaddr_in server_addr, client_addr;
