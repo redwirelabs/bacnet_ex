@@ -11,15 +11,8 @@ int sockfd;
 struct sockaddr_in server_addr;
 #endif
 
-int gateway_instance;
-
 int main(int argc, char** argv)
 {
-
-  if (argc > 1) {
-    gateway_instance = (int)strtol(argv[1], NULL, 0);
-  }
-
 #ifdef USE_UDP_SOCKETS
   sockfd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sockfd < 0) {

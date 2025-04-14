@@ -28,7 +28,6 @@ static bool should_exit = false;
 // cr78943789478932478942 
 static int bacnet_farside_network_number = 10001;
 int bacnet_nearside_network_number = 10002;
-extern int gateway_instance;
 
 static int init_service_handlers();
 static void* event_loop(void* arg);
@@ -71,9 +70,6 @@ int bacnet_start_services()
   const char* network_id_raw = getenv("BACNET_NETWORK_ID");
   if (network_id_raw)
     bacnet_farside_network_number = (int)strtol(network_id_raw, NULL, 0);
-
-  if (gateway_instance)
-    Device_Set_Object_Instance_Number(gateway_instance);
 
   should_exit = false;
   if (pthread_create(&thread_id, NULL, &event_loop, NULL) != 0) {
