@@ -33,7 +33,7 @@ defmodule BACNetUDP.Helper do
     3. Create a virtual device with an analog-input object.
   """
   @spec initialize_gateway_with_a_vdev(integer(), integer()) :: pid()
-  def initialize_gateway_with_a_vdev(gateway_instance \\ 260001, vdev_instance \\ 1001) do
+  def initialize_gateway_with_a_vdev(gateway_instance \\ 1000, vdev_instance \\ 1001) do
     {:ok, pid} = BACNetUDP.start_link([])
     :ok = create_gateway(pid, gateway_instance)
     :ok = create_vdev(pid, vdev_instance)
@@ -68,7 +68,7 @@ defmodule BACNetUDP.Helper do
   If not `gateway_instance` provided, the default value is 260001.
   """
   @spec create_gateway(pid(), integer()) :: :ok | {:error, any()}
-  def create_gateway(pid, gateway_instance \\ 260001) do
+  def create_gateway(pid, gateway_instance \\ 1000) do
     BACNet.Gateway.create(pid, gateway_instance, "Relay", "Gateway", "Array Relay", "v1.0.0")
   end
 

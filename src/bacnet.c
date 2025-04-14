@@ -24,6 +24,8 @@
 static pthread_t thread_id;
 pthread_mutex_t exit_signal_lock = PTHREAD_MUTEX_INITIALIZER;
 static bool should_exit = false;
+// todo 0 - See item Tasks #32, Abelino needs to allow users to manipulate this.
+// cr78943789478932478942 
 static int bacnet_farside_network_number = 10001;
 int bacnet_nearside_network_number = 10002;
 extern int gateway_instance;
@@ -278,6 +280,7 @@ static object_functions_t SUPPORTED_OBJECT_TABLE[] = {
   },
 };
 
+// cr908341289012383
 static int init_service_handlers()
 {
   Device_Init(SUPPORTED_OBJECT_TABLE);
@@ -435,6 +438,8 @@ handle_create_routed_analog_input(create_routed_analog_input_t* params)
   Routed_Analog_Input_Units_Set(params->object_bacnet_id, params->unit);
   Routed_Analog_Input_Name_Set(params->object_bacnet_id, params->name);
   Get_Routed_Device_Object(0);
+  // BITS - Why call it again with device_index 0?
+  //      - Is device 0 always the router?
 
   return 0;
 }
