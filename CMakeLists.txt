@@ -6,6 +6,8 @@ find_package(bacnet-stack REQUIRED)
 link_directories(${bacnet-stack_DIR})
 include_directories(../bacnet-stack/src)
 
+option(USE_UDP_SOCKETS "Use UDP Sockets instead of Elixir's Port module" OFF)
+
 # setup erlang
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} $ENV{ERL_EI_LIBDIR})
 find_library(ERLANG_EI_LIB ei)
@@ -39,5 +41,9 @@ set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
 add_executable(bacnetd ${SOURCES})
 set_target_properties(bacnetd PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${MIX_APP_PATH}/priv)
+
+if(USE_UDP_SOCKETS)
+    target_compile_definitions(bacnetd PRIVATE USE_UDP_SOCKETS)
+endif()
 # target_link_libraries(bacnetd PRIVATE ${ERLANG_EI_LIB})
 target_link_libraries(bacnetd PRIVATE :libbacnet-stack.a ${ERLANG_EI_LIB})

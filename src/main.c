@@ -6,8 +6,10 @@
 #include "log.h"
 #include "port.h"
 
+#ifdef USE_UDP_SOCKETS
 int sockfd;
 struct sockaddr_in server_addr;
+#endif
 
 int gateway_instance;
 
@@ -18,7 +20,7 @@ int main(int argc, char** argv)
     gateway_instance = (int)strtol(argv[1], NULL, 0);
   }
 
-#if USE_UDP_SOCKETS
+#ifdef USE_UDP_SOCKETS
   sockfd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sockfd < 0) {
       perror("Socket creation failed");
@@ -45,7 +47,7 @@ int main(int argc, char** argv)
   bacnet_stop_services();
   bacnet_wait_until_done();
 
-#if USE_UDP_SOCKETS
+#ifdef USE_UDP_SOCKETS
   close(sockfd);
 #endif
 
