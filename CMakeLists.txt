@@ -40,7 +40,8 @@ else()
         patches/0005-Add-routed-analog-input-object-support.patch
         patches/0006-Add-routed-multistate-input-object-support.patch
         patches/0007-Allow-BACNET_PROTOCOL_REVISION-to-be-set-by-user.patch
-        patches/0008-Exclude-object-identifier-from-the-common-prop-list.patch)
+        patches/0008-Exclude-object-identifier-from-the-common-prop-list.patch
+        patches/0009-Set-description-and-name-when-creating-input-objs.patch)
 endif()
 
 CPMFindPackage(
@@ -61,6 +62,8 @@ set(SOURCES
     src/log.c
     src/main.c
     src/port.c
+    src/object/binary_input.c
+    src/object/characterstring_value.c
     src/object/command.c
     src/protocol/decode_call.c
     src/protocol/enum.c

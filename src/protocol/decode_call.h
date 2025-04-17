@@ -12,6 +12,9 @@ typedef enum {
   CALL_SET_ROUTED_MULTISTATE_INPUT_VALUE,
   CALL_CREATE_ROUTED_COMMAND,
   CALL_SET_ROUTED_COMMAND_STATUS,
+  CALL_CREATE_CHARACTERSTRING_VALUE,
+  CALL_CREATE_BINARY_INPUT,
+  CALL_SET_BINARY_INPUT_VALUE,
   CALL_UNKNOWN = 255,
 } __attribute__((packed)) bacnet_call_type_t;
 
@@ -29,9 +32,11 @@ typedef struct {
 } create_routed_device_t;
 
 typedef struct {
-  uint32_t                 device_bacnet_id;
-  uint32_t                 object_bacnet_id;
-  char                     name[MAXATOMLEN];
+  uint32_t device_bacnet_id;
+  uint32_t object_bacnet_id;
+  char     name[MAXATOMLEN];
+  char     description[MAXATOMLEN];
+
   BACNET_ENGINEERING_UNITS unit;
 } create_routed_analog_input_t;
 
@@ -45,6 +50,7 @@ typedef struct {
   uint32_t device_bacnet_id;
   uint32_t object_bacnet_id;
   char     name[MAXATOMLEN];
+  char     description[MAXATOMLEN];
   char*    states;
   size_t   states_length;
 } create_routed_multistate_input_t;
@@ -70,6 +76,32 @@ typedef struct {
 
   bacnet_command_status_t status;
 } set_routed_command_status_t;
+
+typedef struct {
+  uint32_t device_bacnet_id;
+  uint32_t object_bacnet_id;
+  char     name[MAXATOMLEN];
+  char     description[MAXATOMLEN];
+  char     value[MAXATOMLEN];
+} create_characterstring_value_t;
+
+typedef struct {
+  uint32_t device_bacnet_id;
+  uint32_t object_bacnet_id;
+  char     name[MAXATOMLEN];
+  char     description[MAXATOMLEN];
+  char     active_text[MAXATOMLEN];
+  char     inactive_text[MAXATOMLEN];
+  bool     value;
+
+  BACNET_POLARITY polarity;
+} create_binary_input_t;
+
+typedef struct {
+  uint32_t device_bacnet_id;
+  uint32_t object_bacnet_id;
+  bool     value;
+} set_binary_input_value_t;
 
 int bacnet_call_malloc(bacnet_call_type_t type, void** call);
 
