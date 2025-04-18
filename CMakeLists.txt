@@ -19,8 +19,12 @@ set(SOURCES
     src/log.c
     src/main.c
     src/port.c
+    src/object/binary_input.c
+    src/object/characterstring_value.c
+    src/object/command.c
     src/protocol/decode_call.c
-    src/protocol/enum.c)
+    src/protocol/enum.c
+    src/protocol/event.c)
 
 # If not built by Mix, it is necessary to set the variable to
 # the current directory

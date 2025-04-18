@@ -109,4 +109,8 @@ defmodule BACNet.MixProject do
     |> Path.join()
     |> Path.expand()
   end
+
+  defp nproc do
+    :erlang.system_info(:logical_processors)
+  end
 end
