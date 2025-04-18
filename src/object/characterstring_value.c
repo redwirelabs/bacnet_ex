@@ -225,16 +225,20 @@ int characterstring_value_read_property(BACNET_READ_PROPERTY_DATA* data)
       break;
 
     case PROP_OBJECT_NAME:
+    {
       BACNET_CHARACTER_STRING name;
       characterstring_value_name(data->object_instance, &name);
       apdu_len = encode_application_character_string(&apdu[0], &name);
       break;
+    }
 
     case PROP_DESCRIPTION:
+    {
       BACNET_CHARACTER_STRING description;
       characterstring_value_description(object, &description);
       apdu_len = encode_application_character_string(&apdu[0], &description);
       break;
+    }
 
     case PROP_OBJECT_TYPE:
       apdu_len =
@@ -242,12 +246,15 @@ int characterstring_value_read_property(BACNET_READ_PROPERTY_DATA* data)
       break;
 
     case PROP_PRESENT_VALUE:
+    {
       BACNET_CHARACTER_STRING present_value;
       characterstring_value_present_value(object, &present_value);
       apdu_len = encode_application_character_string(&apdu[0], &present_value);
       break;
+    }
 
     case PROP_STATUS_FLAGS:
+    {
       BACNET_BIT_STRING status;
       bitstring_init(&status);
 
@@ -258,6 +265,7 @@ int characterstring_value_read_property(BACNET_READ_PROPERTY_DATA* data)
 
       apdu_len = encode_application_bitstring(&apdu[0], &status);
       break;
+    }
 
     case PROP_EVENT_STATE:
       apdu_len = encode_application_enumerated(&apdu[0], EVENT_STATE_NORMAL);
