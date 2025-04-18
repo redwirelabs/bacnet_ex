@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "device.h": "c",
+        "keylist.h": "c",
+        "bacdef.h": "c",
+        "config.h": "c",
+        "bacenum.h": "c",
+        "platform.h": "c",
+        "bacnet_stack_exports.h": "c"
+    }
+}
