@@ -116,6 +116,7 @@ defmodule BACNetUDP.Helper do
         vdev.id,
         :rand.uniform(100),
         object.name,
+        object.description,
         object.units
       )
   end

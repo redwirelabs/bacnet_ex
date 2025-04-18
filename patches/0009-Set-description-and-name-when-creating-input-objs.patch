@@ -1,0 +1,103 @@
+From d0bb51317816d9c3b4a0fc657e0bb7d5fcdc1150 Mon Sep 17 00:00:00 2001
+From: abelino <abelino.romo@gmail.com>
+Date: Thu, 10 Apr 2025 20:23:05 -0700
+Subject: [PATCH] Set description and name when creating a msi and ai objects
+
+---
+ src/bacnet/basic/object/routed_analog_input.c     | 10 ++++++++--
+ src/bacnet/basic/object/routed_analog_input.h     |  5 ++++-
+ src/bacnet/basic/object/routed_multistate_input.c | 10 ++++++++--
+ src/bacnet/basic/object/routed_multistate_input.h |  5 ++++-
+ 4 files changed, 24 insertions(+), 6 deletions(-)
+
+diff --git a/src/bacnet/basic/object/routed_analog_input.c b/src/bacnet/basic/object/routed_analog_input.c
+index 6064161e..d0cb3ff7 100644
+--- a/src/bacnet/basic/object/routed_analog_input.c
++++ b/src/bacnet/basic/object/routed_analog_input.c
+@@ -336,8 +336,11 @@ void Routed_Analog_Input_Change_Of_Value_Clear(uint32_t instance_number)
+     object->Changed = false;
+ }
+ 
+-uint32_t Routed_Analog_Input_Create(uint32_t object_instance)
+-{
++uint32_t Routed_Analog_Input_Create(
++  uint32_t object_instance,
++  char *name,
++  char *description
++) {
+   DEVICE_OBJECT_DATA *device = Get_Routed_Device_Object(-1);
+ 
+   if (object_instance >= BACNET_MAX_INSTANCE)
+@@ -369,6 +372,9 @@ uint32_t Routed_Analog_Input_Create(uint32_t object_instance)
+   memset(object->Object_Name, 0, sizeof(object->Object_Name));
+   memset(object->Description, 0, sizeof(object->Description));
+ 
++  memcpy(object->Object_Name, name, strlen(name));
++  memcpy(object->Description, description, strlen(description));
++
+   if (Keylist_Data_Add(device->objects, object_instance, object) < 0) {
+     free(object);
+     return BACNET_MAX_INSTANCE;
+diff --git a/src/bacnet/basic/object/routed_analog_input.h b/src/bacnet/basic/object/routed_analog_input.h
+index 63ef9b16..399e4777 100644
+--- a/src/bacnet/basic/object/routed_analog_input.h
++++ b/src/bacnet/basic/object/routed_analog_input.h
+@@ -85,7 +85,10 @@ BACNET_STACK_EXPORT
+ void Routed_Analog_Input_Intrinsic_Reporting(uint32_t object_instance);
+ 
+ BACNET_STACK_EXPORT
+-uint32_t Routed_Analog_Input_Create(uint32_t object_instance);
++uint32_t Routed_Analog_Input_Create(
++  uint32_t object_instance,
++  char *name,
++  char *description);
+ 
+ BACNET_STACK_EXPORT
+ bool Routed_Analog_Input_Delete(uint32_t object_instance);
+diff --git a/src/bacnet/basic/object/routed_multistate_input.c b/src/bacnet/basic/object/routed_multistate_input.c
+index 9df2251f..4301e0da 100644
+--- a/src/bacnet/basic/object/routed_multistate_input.c
++++ b/src/bacnet/basic/object/routed_multistate_input.c
+@@ -435,8 +435,11 @@ void Routed_Multistate_Input_Change_Of_Value_Clear(uint32_t instance_number)
+     object->Changed = false;
+ }
+ 
+-uint32_t Routed_Multistate_Input_Create(uint32_t object_instance)
+-{
++uint32_t Routed_Multistate_Input_Create(
++  uint32_t object_instance,
++  char *name,
++  char *description
++) {
+   DEVICE_OBJECT_DATA *device = Get_Routed_Device_Object(-1);
+ 
+   if (object_instance >= BACNET_MAX_INSTANCE)
+@@ -465,6 +468,9 @@ uint32_t Routed_Multistate_Input_Create(uint32_t object_instance)
+   memset(object->Object_Name, 0, sizeof(object->Object_Name));
+   memset(object->Description, 0, sizeof(object->Description));
+ 
++  memcpy(object->Object_Name, name, strlen(name));
++  memcpy(object->Description, description, strlen(description));
++
+   if (Keylist_Data_Add(device->objects, object_instance, object) < 0) {
+     free(object);
+     return BACNET_MAX_INSTANCE;
+diff --git a/src/bacnet/basic/object/routed_multistate_input.h b/src/bacnet/basic/object/routed_multistate_input.h
+index d9a5725f..3e73b34d 100644
+--- a/src/bacnet/basic/object/routed_multistate_input.h
++++ b/src/bacnet/basic/object/routed_multistate_input.h
+@@ -81,7 +81,10 @@ BACNET_STACK_EXPORT
+ void Routed_Multistate_Input_Intrinsic_Reporting(uint32_t object_instance);
+ 
+ BACNET_STACK_EXPORT
+-uint32_t Routed_Multistate_Input_Create(uint32_t object_instance);
++uint32_t Routed_Multistate_Input_Create(
++  uint32_t object_instance,
++  char *name,
++  char *description);
+ 
+ BACNET_STACK_EXPORT
+ bool Routed_Multistate_Input_Delete(uint32_t object_instance);
+-- 
+2.48.1
+
