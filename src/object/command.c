@@ -268,16 +268,20 @@ int command_read_property(BACNET_READ_PROPERTY_DATA* data)
       break;
 
     case PROP_OBJECT_NAME:
+    {
       BACNET_CHARACTER_STRING name;
       command_name(instance, &name);
       apdu_len = encode_application_character_string(&apdu[0], &name);
       break;
+    }
 
     case PROP_DESCRIPTION:
+    {
       BACNET_CHARACTER_STRING description;
       command_description(object, &description);
       apdu_len = encode_application_character_string(&apdu[0], &description);
       break;
+    }
 
     case PROP_OBJECT_TYPE:
       apdu_len = encode_application_enumerated(&apdu[0], OBJECT_COMMAND);
@@ -416,6 +420,7 @@ bool command_write_property(BACNET_WRITE_PROPERTY_DATA* data)
 
       return sent_ret == 0;
     default:
+    {
       bool is_valid_prop =
         property_lists_member(
           required_properties,
@@ -433,6 +438,7 @@ bool command_write_property(BACNET_WRITE_PROPERTY_DATA* data)
         data->error_code  = ERROR_CODE_UNKNOWN_PROPERTY;
       }
       break;
+    }
   }
 
   return false;
