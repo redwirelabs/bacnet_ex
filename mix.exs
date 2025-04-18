@@ -11,8 +11,16 @@ defmodule BACNet.MixProject do
       package: package(),
       deps: deps(),
       docs: docs(),
-      compilers: [:cmake] ++ Mix.compilers(),
-      cmake_env: %{"MAKEFLAGS" => "-j#{nproc()}"},
+      # ivan2ed ivan2abelino - I am having issues with using the "elixir_cmake"
+      # By the moment I just disabled, at least for our case, in which we can
+      # clone the repo and set the dependency in BlofeldRelayFirmware with a
+      # local path.
+      # In any case, to not forget, the issue I am having is that when I run "iex -S mix"
+      # having the :cmake option in :compilers, I got:
+      # ** (Mix) Failure running 'make' (status: 2).
+      # make: *** There is no rule for build the target. 'all'.  Stop.
+      # compilers: [:cmake] ++ Mix.compilers(),
+      compilers: Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls, test_task: "espec"],
       dialyzer: [

@@ -1,0 +1,51 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-project",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "cd ../bacnet-stack && mkdir -p build && cd build && cmake .. -DBACNET_PROTOCOL_REVISION=24 -DBACNET_STACK_BUILD_APPS=no -DBACDL_BIP6=OFF -DCMAKE_BUILD_TYPE=Debug && make && cd ../../bacnet_ex && cmake -DCMAKE_C_FLAGS=-pthread -DUSE_UDP_SOCKETS=${USE_UDP_SOCKETS} . && make"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "options": {
+                "env": {
+                    "USE_UDP_SOCKETS": "ON", // change to OFF, remove or comment this line in case you don't want to use UDP sockets
+                    "ERL_EI_INCLUDE_DIR": "~/.asdf/installs/erlang/27.0.1/usr/include",
+                    "ERL_EI_LIBDIR": "~/.asdf/installs/erlang/27.0.1/usr/lib/"
+                }
+            },
+            "detail": "Build the project by running cmake and make in specified directories."
+        },
+        {
+            "label": "clean-project",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "cp ../bacnet-stack/Makefile.bak ../bacnet-stack/Makefile"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "options": {
+                "env": {
+                    "ERL_EI_INCLUDE_DIR": "~/.asdf/installs/erlang/27.0.1/usr/include"
+                }
+            },
+            "detail": "Build the project by running cmake and make in specified directories."
+        }
+    ]
+}

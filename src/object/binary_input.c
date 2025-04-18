@@ -236,16 +236,20 @@ int binary_input_read_property(BACNET_READ_PROPERTY_DATA* data)
       break;
 
     case PROP_OBJECT_NAME:
+    {
       BACNET_CHARACTER_STRING name;
       binary_input_name(data->object_instance, &name);
       apdu_len = encode_application_character_string(&apdu[0], &name);
       break;
+    }
 
     case PROP_DESCRIPTION:
+    {
       BACNET_CHARACTER_STRING description;
       binary_input_description(object, &description);
       apdu_len = encode_application_character_string(&apdu[0], &description);
       break;
+    }
 
     case PROP_OBJECT_TYPE:
       apdu_len =
@@ -261,18 +265,23 @@ int binary_input_read_property(BACNET_READ_PROPERTY_DATA* data)
       break;
 
     case PROP_ACTIVE_TEXT:
+    {
       BACNET_CHARACTER_STRING active_text;
       binary_input_active_text(object, &active_text);
       apdu_len = encode_application_character_string(&apdu[0], &active_text);
       break;
+    }
 
     case PROP_INACTIVE_TEXT:
+    {
       BACNET_CHARACTER_STRING inactive_text;
       binary_input_inactive_text(object, &inactive_text);
       apdu_len = encode_application_character_string(&apdu[0], &inactive_text);
       break;
+    }
 
     case PROP_STATUS_FLAGS:
+    {
       BACNET_BIT_STRING status;
       bitstring_init(&status);
 
@@ -283,6 +292,7 @@ int binary_input_read_property(BACNET_READ_PROPERTY_DATA* data)
 
       apdu_len = encode_application_bitstring(&apdu[0], &status);
       break;
+    }
 
     case PROP_EVENT_STATE:
       apdu_len = encode_application_enumerated(&apdu[0], EVENT_STATE_NORMAL);

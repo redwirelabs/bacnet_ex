@@ -27,7 +27,10 @@
 static pthread_t thread_id;
 pthread_mutex_t exit_signal_lock = PTHREAD_MUTEX_INITIALIZER;
 static bool should_exit = false;
-static int bacnet_network_id = 1000;
+// todo 0 - See item Tasks #32, Abelino needs to allow users to manipulate this.
+// cr78943789478932478942 
+static int bacnet_farside_network_number = 10001;
+int bacnet_nearside_network_number = 10002;
 
 static int init_service_handlers();
 static void* event_loop(void* arg);
@@ -83,7 +86,7 @@ int bacnet_start_services()
 {
   const char* network_id_raw = getenv("BACNET_NETWORK_ID");
   if (network_id_raw)
-    bacnet_network_id = (int)strtol(network_id_raw, NULL, 0);
+    bacnet_farside_network_number = (int)strtol(network_id_raw, NULL, 0);
 
   should_exit = false;
   if (pthread_create(&thread_id, NULL, &event_loop, NULL) != 0) {
@@ -172,7 +175,7 @@ cleanup:
 
 static void* event_loop(void* arg)
 {
-  int     network_ids[2]   = { bacnet_network_id, -1 };
+  int     network_ids[2]   = { bacnet_farside_network_number, -1 };
   uint8_t buffer[MAX_MPDU] = { 0 };
 
   LOG_DEBUG("bacnetd: starting event_loop");
@@ -355,8 +358,13 @@ static object_functions_t SUPPORTED_OBJECT_TABLE[] = {
     .Object_Delete = NULL,
     .Object_Timer = NULL,
   },
+  {
+    // Sentinel value to terminate the list.
+    .Object_Type = MAX_BACNET_OBJECT_TYPE
+  }
 };
 
+// cr908341289012383
 static int init_service_handlers()
 {
   Device_Init(SUPPORTED_OBJECT_TABLE);
@@ -498,7 +506,7 @@ static int handle_create_routed_device(create_routed_device_t* device)
     );
 
   DEVICE_OBJECT_DATA* child = Get_Routed_Device_Object(index);
-  set_device_address(child, bacnet_network_id);
+  set_device_address(child, bacnet_farside_network_number);
 
   return 0;
 }
@@ -519,6 +527,8 @@ handle_create_routed_analog_input(create_routed_analog_input_t* params)
   Routed_Analog_Input_Units_Set(params->object_bacnet_id, params->unit);
   Routed_Analog_Input_Name_Set(params->object_bacnet_id, params->name);
   Get_Routed_Device_Object(0);
+  // BITS - Why call it again with device_index 0?
+  //      - Is device 0 always the router?
 
   return 0;
 }

@@ -11,6 +11,14 @@
 #define TOSTR(x) STRINGIFY(x)
 #define ERL_TUPLE TOSTR(ERL_SMALL_TUPLE_EXT) TOSTR(ERL_SMALL_TUPLE_EXT)
 
+#ifdef USE_UDP_SOCKETS
+#define PORT1 8080
+#define PORT2 8081
+#define BUFFER_SIZE 1500
+extern int sockfd;
+extern struct sockaddr_in server_addr;
+#endif
+
 typedef struct {
   erlang_ref from_ref;
   erlang_pid from_pid;
@@ -24,6 +32,7 @@ static handle_request_t handle_request;
 static int read_exact(uint8_t* buffer, size_t length);
 static int read_u32(uint32_t* value);
 static void* read_loop(void* arg);
+static void* read_loop_udp(void* arg);
 static int decode_gen_call(char* buffer, int* index, gen_call_t* command);
 
 /**
@@ -38,10 +47,17 @@ static int decode_gen_call(char* buffer, int* index, gen_call_t* command);
  */
 int port_start(handle_request_t handle_request_cb)
 {
+#ifndef USE_UDP_SOCKETS
   if (pthread_create(&read_thread_id, NULL, &read_loop, NULL) != 0) {
     LOG_DEBUG("bacnetd: failed to create port read thread");
     return -1;
   }
+#else
+  if (pthread_create(&read_thread_id, NULL, &read_loop_udp, NULL) != 0) {
+    perror("Thread creation failed");
+    exit(EXIT_FAILURE);
+  }
+#endif
 
   pthread_mutex_init(&write_lock, NULL);
   handle_request = handle_request_cb;
@@ -79,9 +95,10 @@ int port_wait_until_done()
  */
 int port_send(ei_x_buff* message)
 {
+#ifndef USE_UDP_SOCKETS
   uint32_t total_bytes = htonl(message->index);
   size_t sent_bytes = 0;
-
+  
   pthread_mutex_lock(&write_lock);
   int rt = write(STDOUT_FILENO, &total_bytes, sizeof(total_bytes));
   if (rt != 4) {
@@ -103,11 +120,28 @@ int port_send(ei_x_buff* message)
   }
 
   pthread_mutex_unlock(&write_lock);
-  return 0;
+#else
+  // todo 0 - Remove it when it isn't more necessary
+  printf("Message length: %d bytes\n", message->index);
 
-error:
-  pthread_mutex_unlock(&write_lock);
-  return -1;
+  ssize_t sent = sendto(sockfd,
+                        message->buff,
+                        message->index, 0,
+                        (const struct sockaddr *)&server_addr,
+                        sizeof(server_addr));
+  if (sent < 0) {
+      perror("Error trying to reply to Elixir");
+      return -1;
+  } else if (sent != message->index) {
+      fprintf(stderr, "Sent fewer bytes than expected: %zd out of %d\n", sent, message->index);
+      return -1;
+  }
+#endif
+    return 0;
+
+  error:
+    pthread_mutex_unlock(&write_lock);
+    return -1;
 }
 
 /**
@@ -147,6 +181,85 @@ int port_read(ei_x_buff* message)
 
   return 0;
 }
+
+#ifdef USE_UDP_SOCKETS
+static void* read_loop_udp(void *arg) {
+  int sockfd;
+  struct sockaddr_in server_addr, client_addr;
+  socklen_t addr_size = sizeof(struct sockaddr_in);
+  char buffer[BUFFER_SIZE];
+
+  sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (sockfd < 0) {
+      perror("Socket creation failed");
+      exit(EXIT_FAILURE);
+  }
+
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_port = htons(PORT2);
+  server_addr.sin_addr.s_addr = INADDR_ANY;
+
+  if (bind(sockfd, (const struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+      perror("Bind failed");
+      close(sockfd);
+      LOG_ERROR("bacnetd: bind failed");
+      exit(EXIT_FAILURE);
+  }
+
+  while (true) {
+    ei_x_buff message;
+    ei_x_new(&message);
+
+    memset(buffer, 0, BUFFER_SIZE);
+    ssize_t received = recvfrom(sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr *)&client_addr, &addr_size);
+    
+    if (received > 0) {
+      printf("Received from BACNetUDP (Elixir): %s\n", buffer);
+    
+      int index = 0;
+      int version = 0;
+      ei_term term = { 0 };
+      char message_type[MAXATOMLEN] = { 0 };
+
+      gen_call_t call_command = { 0 };
+      if (decode_gen_call(buffer, &index, &call_command) == -1)
+        goto cleanup;
+
+      // reply {:"$gen_reply", {PID, [:alias | REF]}, RESULT}
+      ei_x_buff reply;
+      ei_x_new_with_version(&reply);
+      ei_x_encode_tuple_header(&reply, 3);
+      ei_x_encode_atom(&reply, "$gen_reply");
+
+      ei_x_encode_tuple_header(&reply, 2);
+      ei_x_encode_pid(&reply, &call_command.from_pid);
+      ei_x_encode_list_header(&reply, 1);
+      ei_x_encode_atom(&reply, "alias");
+      ei_x_encode_ref(&reply, &call_command.from_ref);
+
+      ei_x_buff* request = &call_command.request;
+      handle_request(request->buff, &request->index, &reply);
+      // todo 0 - Remove it when it isn't more necessary
+      printf("Buffer contents: %s\n", reply.buff);
+      
+      if (port_send(&reply) == -1)
+      {        
+        LOG_ERROR("bacnetd: unable to send reply");
+      }
+
+      ei_x_free(&reply);
+    } else {
+      printf("Unexpected number of bytes %d\n\r", received);
+    }
+
+  cleanup:
+    ei_x_free(&message);
+  }
+
+  pthread_exit(NULL);
+  close(sockfd);
+}
+#endif
 
 static void* read_loop(void* arg)
 {

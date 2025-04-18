@@ -25,5 +25,36 @@ bacnet-*.tar
 # Temporary files, for example, from tests.
 /tmp/
 
+# Temporary files and directories
+_deps
+_build
+CPM_Modules
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+CMakeUserPresets.json
+
 # Ignore the lock file for libraries.
 mix.lock
+cpm-package-lock.cmake
+
+*.o
+*.a
+bin/
+bacgateway
+bacserv
+build/.cmake
+
+# BITS - Exclude temporarily
+karg/*
+karg.1.4.bak/*
+karg-fellowes-manually-patched/*
+priv/bacnetd
