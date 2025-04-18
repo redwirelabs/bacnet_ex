@@ -355,6 +355,10 @@ static object_functions_t SUPPORTED_OBJECT_TABLE[] = {
     .Object_Delete = NULL,
     .Object_Timer = NULL,
   },
+  {
+    // Sentinel value to terminate the list.
+    .Object_Type = MAX_BACNET_OBJECT_TYPE
+  }
 };
 
 static int init_service_handlers()
