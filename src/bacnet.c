@@ -274,6 +274,10 @@ static object_functions_t SUPPORTED_OBJECT_TABLE[] = {
     .Object_Delete = Routed_Multistate_Input_Delete,
     .Object_Timer = NULL,
   },
+  {
+    // Sentinel value to terminate the list.
+    .Object_Type = MAX_BACNET_OBJECT_TYPE
+  }
 };
 
 // cr908341289012383
