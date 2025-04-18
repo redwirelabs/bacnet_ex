@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.20.0 FATAL_ERROR)
 
-# setup bacnet-stack location
-set(bacnet-stack_DIR "../bacnet-stack")
-find_package(bacnet-stack REQUIRED)
+# setup bacnet-stack
+set(bacnet-stack_DIR "../bacnet-stack/build")
 link_directories(${bacnet-stack_DIR})
 include_directories(../bacnet-stack/src)
 

@@ -7,8 +7,7 @@
             "command": "bash",
             "args": [
                 "-c",
-                "cd ../bacnet-stack && cp Makefile Makefile.bak && cmake -DBACNET_PROTOCOL_REVISION=24 -DBACNET_STACK_BUILD_APPS=no -DCMAKE_BUILD_TYPE=RelWithDebInfo . && make && cd .. && cd bacnet_ex && cmake -DCMAKE_C_FLAGS=-pthread -DUSE_UDP_SOCKETS=${USE_UDP_SOCKETS} . && make"
-                // "cd karg && cmake . && make && cd .. && cmake . && make"
+                "cd ../bacnet-stack && mkdir -p build && cd build && cmake .. -DBACNET_PROTOCOL_REVISION=24 -DBACNET_STACK_BUILD_APPS=no -DBACDL_BIP6=OFF -DCMAKE_BUILD_TYPE=Debug && make && cd ../../bacnet_ex && cmake -DCMAKE_C_FLAGS=-pthread -DUSE_UDP_SOCKETS=${USE_UDP_SOCKETS} . && make"
             ],
             "group": {
                 "kind": "build",
