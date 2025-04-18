@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.20.0 FATAL_ERROR)
 
-# setup bacnet-stack location
-set(bacnet-stack_DIR "../bacnet-stack")
-find_package(bacnet-stack REQUIRED)
+# setup bacnet-stack
+set(bacnet-stack_DIR "../bacnet-stack/build")
 link_directories(${bacnet-stack_DIR})
 include_directories(../bacnet-stack/src)
 
@@ -20,8 +19,12 @@ set(SOURCES
     src/log.c
     src/main.c
     src/port.c
+    src/object/binary_input.c
+    src/object/characterstring_value.c
+    src/object/command.c
     src/protocol/decode_call.c
-    src/protocol/enum.c)
+    src/protocol/enum.c
+    src/protocol/event.c)
 
 # If not built by Mix, it is necessary to set the variable to
 # the current directory

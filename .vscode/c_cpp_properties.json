@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/home/ivanhercaz/dev/bac_test/fellowes/bacnet-stack/src"
+                "${workspaceFolder}/bacnet-stack/src"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
