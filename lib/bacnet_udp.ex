@@ -21,22 +21,6 @@ defmodule BACNetUDP do
   end
 
   @doc """
-  Asynchronously send a UDP message using GenServer.cast.
-  You can override the default remote IP, port, and message.
-
-  todo 1 - This function is not intended to be used in the module, however
-  by the moment can help to debug. When it isn't more necessary
-  can be removed safely.
-  """
-  def send_message(
-        message \\ @default_message,
-        remote_ip \\ @default_remote_ip,
-        remote_port \\ @port2
-      ) do
-    GenServer.cast(__MODULE__, {:send_message, message, remote_ip, remote_port})
-  end
-
-  @doc """
   Helper function to kill the current GenServer.
   """
   def kill(), do: GenServer.cast(__MODULE__, {:exit, :shutdown})
@@ -120,15 +104,9 @@ defmodule BACNetUDP do
   end
 
   defp receive_loop(socket) do
-    # ivan - for testing, in infinity
-    case :gen_udp.recv(socket, 1500, :infinity) do
+        case :gen_udp.recv(socket, 1500, :infinity) do
       {:ok, {_ip, _port, data}} ->
-        # todo 0 - Remove when it isn't necessary to debug it anymore.
-        # data
-        # |> :erlang.binary_to_term()
-        # |> IO.inspect(label: "term")
-
-        try do
+                try do
           data
           |> :erlang.binary_to_term()
           |> process_message
