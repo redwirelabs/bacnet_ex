@@ -29,9 +29,21 @@ else()
 endif()
 
 # dependencies
+if(NOT "$ENV{BACNET_GIT_REPOSITORY}" STREQUAL "")
+    set(BACNET_GIT_REPOSITORY "$ENV{BACNET_GIT_REPOSITORY}")
+endif()
+
+if(NOT "$ENV{BACNET_GIT_REF}" STREQUAL "")
+    set(BACNET_GIT_REF "$ENV{BACNET_GIT_REF}")
+endif()
+
 if(DEFINED CPM_bacnet_SOURCE)
     set(PATCHES "")
+elseif(DEFINED BACNET_GIT_REPOSITORY AND DEFINED BACNET_GIT_REF)
+    set(PATCHES "")
 else()
+    set(BACNET_GIT_REPOSITORY "https://github.com/bacnet-stack/bacnet-stack.git")
+    set(BACNET_GIT_REF "bacnet-stack-1.3.8")
     set(PATCHES
         patches/0001-Add-Model-and-Application-Software-Version-to-routed.patch
         patches/0002-Do-not-interpret-a-zero-d-out-device-in-a-static-lis.patch
@@ -46,8 +58,8 @@ endif()
 
 CPMFindPackage(
     NAME bacnet
-    GITHUB_REPOSITORY bacnet-stack/bacnet-stack
-    GIT_TAG bacnet-stack-1.3.8
+    GIT_REPOSITORY ${BACNET_GIT_REPOSITORY}
+    GIT_TAG ${BACNET_GIT_REF}
     OPTIONS
         "BACNET_PROTOCOL_REVISION 24"
         "BACNET_STACK_BUILD_APPS NO"
